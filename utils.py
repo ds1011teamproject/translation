@@ -8,12 +8,12 @@ def read_data(filename):
         for line in fp:
             if (i % 100 == 0):
                 line = line.lower()\
-                    .replace("'", " ")\
                     .replace(".", "")\
                     .replace("?", "")\
                     .replace("!", "")\
                     .replace(":", "")\
-                    .replace(";", "")
+                    .replace(";", "")\
+                    .replace("'", " ")
                 lines.append(line)
             i += 1
     fp.close()

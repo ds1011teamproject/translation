@@ -21,6 +21,10 @@ $ conda activate mt
 (mt)$ conda install pytorch torchvision -c pytorch
 ```
 
+### HPC
+
+For detailed instructions, see [this guide](https://github.com/mvishwali28/quantifier-rnn-learning)
+
 ## RNN encoder-decoder
 
 PyTorch implementation of recurrent neural network (RNN) encoder-decoder architecture model for statistical machine translation, cf. ["Learning Phrase Representations using RNN Encoder–Decoder for Statistical Machine Translation"](https://arxiv.org/pdf/1406.1078.pdf) (Cho et al., 2014)
