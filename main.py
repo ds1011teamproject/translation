@@ -22,7 +22,7 @@ def main(data, rnn):
             losses.append(loss)
 
             if (i % 100 == 0):
-                print("Loss at step {}: {:.2f}").format(i, loss)
+                print("Loss at step {}: {:.2f}".format(i, loss))
                 print("Truth: \"{}\"".format(data.vec_to_sentence(target)))
                 print("Guess: \"{}\"\n").format(
                     data.vec_to_sentence(outputs[:-1]))
