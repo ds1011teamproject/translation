@@ -24,8 +24,8 @@ def main(data, rnn):
             if (i % 100 == 0):
                 print("Loss at step {}: {:.2f}".format(i, loss))
                 print("Truth: \"{}\"".format(data.vec_to_sentence(target)))
-                print("Guess: \"{}\"\n").format(
-                    data.vec_to_sentence(outputs[:-1]))
+                print("Guess: \"{}\"\n".format(
+                    data.vec_to_sentence(outputs[:-1])))
                 rnn.save()
 
 
