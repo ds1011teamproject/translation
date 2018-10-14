@@ -82,3 +82,8 @@ class GRU(object):
     def save(self):
         torch.save(self.encoder.state_dict(), settings.gru_encoder_model)
         torch.save(self.decoder.state_dict(), settings.gru_decoder_model)
+
+    def cuda(self):
+        self.encoder = self.encoder.cuda()
+        self.decoder = self.decoder.cuda()
+        return self

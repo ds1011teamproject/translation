@@ -16,9 +16,11 @@ def main(data, rnn):
         print("{} epoch: {} {}".format("=" * 20, epoch, "=" * 20))
 
         for i, batch in enumerate(data.sentences(config["num_batches"])):
+            # TODO: data.sentences needs to be a Tensor instead of a list of tensors
+            # TODO: after that is fixed, call input_.cuda() and target.cuda()
             input_, target = batch
 
-            loss, outputs = rnn.train(input_, target.copy())
+            loss, outputs = rnn.train(input_, target) #.copy())
             losses.append(loss)
 
             if (i % 100 == 0):
@@ -45,7 +47,7 @@ if __name__ == "__main__":
     """
     data = LanguageLoader(settings.en_path, settings.fr_path,
                           config["vocab_size"], config["max_length"])
-    rnn = GRU(data.input_size, data.output_size)
+    rnn = GRU(data.input_size, data.output_size) #TODO: .cuda()
 
     main(data, rnn)
     # translate(data, rnn)
