@@ -13,17 +13,35 @@ Team project for [Natural Language Processing with Representation Learning
 
 [[download] Common Crawl corpus](http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz)
 
+### Download on HPC
+
+```
+$ cd /scratch/<netID>/
+$ wget http://www.statmt.org/wmt13/training-parallel-europarl-v7.tgz
+$ tar -xvzf training-parallel-europarl-v7.tgz
+training/europarl-v7.cs-en.cs
+training/europarl-v7.cs-en.en
+training/europarl-v7.de-en.de
+training/europarl-v7.de-en.en
+training/europarl-v7.es-en.en
+training/europarl-v7.es-en.es
+training/europarl-v7.fr-en.en
+training/europarl-v7.fr-en.fr
+```
+
+**!** Don't forget to update the data file paths in `settings.py`.
+
 ## Requirements
 
 ```
+$(HPC) module load anaconda3/5.3.0
 $ conda create -n mt python=3.6
 $ conda activate mt
 (mt)$ conda install pytorch torchvision -c pytorch
+(mt)$ python main.py
 ```
 
-### HPC
-
-For detailed instructions, see [this guide](https://github.com/mvishwali28/quantifier-rnn-learning)
+See [this guide for detailed instructions on how to run on HPC](https://github.com/mvishwali28/quantifier-rnn-learning).
 
 ## RNN encoder-decoder
 
