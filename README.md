@@ -46,6 +46,7 @@ See [this guide for detailed instructions on how to run on HPC](https://github.c
 
 ```
 $ mkdir data
+$ mkdir models
 $ python main.py
 ```
 
