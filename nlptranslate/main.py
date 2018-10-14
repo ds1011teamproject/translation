@@ -1,9 +1,8 @@
-from LanguageLoader import *
-from GRU import *
+from nlptranslate.data_loaders.LanguageLoader import LanguageLoader
+from nlptranslate.modules.GRU import GRU
+from nlptranslate.config import basic_settings
 
-import settings
-
-config = settings.default
+config = basic_settings.default
 
 
 def main(data, rnn):
@@ -48,7 +47,7 @@ if __name__ == "__main__":
     """
     Usage: $ python main.py
     """
-    data = LanguageLoader(settings.en_path, settings.fr_path,
+    data = LanguageLoader(basic_settings.en_path, basic_settings.fr_path,
                           config["vocab_size"], config["max_length"])
     rnn = GRU(data.input_size, data.output_size)  # TODO: .cuda()
 

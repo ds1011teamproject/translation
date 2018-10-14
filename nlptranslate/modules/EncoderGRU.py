@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 
-import settings
+from nlptranslate.config import basic_settings
 
-config = settings.default
+config = basic_settings.default
 
 
 class EncoderGRU(nn.Module):

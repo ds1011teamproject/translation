@@ -1,13 +1,11 @@
 import numpy as np
-
-import torch.nn as nn
-import torch.optim as optim
-from torch.autograd import Variable
 import torch
-
-import settings
-from modules.EncoderGRU import *
-from modules.DecoderGRU import *
+from torch import nn
+import torch.optim as optim
+from nlptranslate.modules.EncoderGRU import EncoderGRU
+from nlptranslate.modules.DecoderGRU import DecoderGRU
+from torch.autograd import Variable
+from nlptranslate.config import basic_settings
 
 
 class GRU(object):
@@ -80,8 +78,8 @@ class GRU(object):
         return sentence
 
     def save(self):
-        torch.save(self.encoder.state_dict(), settings.gru_encoder_model)
-        torch.save(self.decoder.state_dict(), settings.gru_decoder_model)
+        torch.save(self.encoder.state_dict(), basic_settings.gru_encoder_model)
+        torch.save(self.decoder.state_dict(), basic_settings.gru_decoder_model)
 
     def cuda(self):
         self.encoder = self.encoder.cuda()

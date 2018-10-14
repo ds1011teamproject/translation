@@ -1,8 +1,8 @@
 import torch.nn as nn
 
-import settings
+from nlptranslate.config import basic_settings
 
-config = settings.default
+config = basic_settings.default
 
 
 class DecoderGRU(nn.Module):
