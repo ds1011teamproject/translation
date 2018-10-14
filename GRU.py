@@ -6,16 +6,16 @@ from torch.autograd import Variable
 import torch
 
 import settings
-from modules.Encoder import *
-from modules.Decoder import *
+from modules.EncoderGRU import *
+from modules.DecoderGRU import *
 
 
-class RNN(object):
+class GRU(object):
     def __init__(self, input_size, output_size):
-        super(RNN, self).__init__()
+        super(GRU, self).__init__()
 
-        self.encoder = Encoder(input_size)
-        self.decoder = Decoder(output_size)
+        self.encoder = EncoderGRU(input_size)
+        self.decoder = DecoderGRU(output_size)
 
         self.loss = nn.CrossEntropyLoss()
         self.encoder_optimizer = optim.Adam(self.encoder.parameters())
@@ -80,5 +80,5 @@ class RNN(object):
         return sentence
 
     def save(self):
-        torch.save(self.encoder.state_dict(), settings.encoder_model)
-        torch.save(self.decoder.state_dict(), settings.decoder_model)
+        torch.save(self.encoder.state_dict(), settings.gru_encoder_model)
+        torch.save(self.decoder.state_dict(), settings.gru_decoder_model)

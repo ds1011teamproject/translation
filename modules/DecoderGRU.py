@@ -5,11 +5,15 @@ import settings
 config = settings.default
 
 
-class Decoder(nn.Module):
+class DecoderGRU(nn.Module):
+    """
+    Decoder
+    Gated recurrent unit (GRU)
+    """
     def __init__(self, input_size,
                  embedding_size=config["embedding_size"],
                  hidden_size=config["hidden_size"]):
-        super(Decoder, self).__init__()
+        super(DecoderGRU, self).__init__()
         self.embedding = nn.Embedding(input_size, embedding_size)
         self.gru = nn.GRU(embedding_size, hidden_size, 1)
         self.linear = nn.Linear(hidden_size, input_size)

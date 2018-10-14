@@ -1,5 +1,5 @@
 from LanguageLoader import *
-from RNN import *
+from GRU import *
 
 import settings
 
@@ -41,10 +41,11 @@ def translate(data, rnn):
 
 if __name__ == "__main__":
     """
+    Usage: $ python main.py
     """
     data = LanguageLoader(settings.en_path, settings.fr_path,
                           config["vocab_size"], config["max_length"])
-    rnn = RNN(data.input_size, data.output_size)
+    rnn = GRU(data.input_size, data.output_size)
 
     main(data, rnn)
     # translate(data, rnn)

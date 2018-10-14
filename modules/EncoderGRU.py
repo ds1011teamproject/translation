@@ -7,11 +7,15 @@ import settings
 config = settings.default
 
 
-class Encoder(nn.Module):
+class EncoderGRU(nn.Module):
+    """
+    Encoder
+    Gated recurrent unit (GRU)
+    """
     def __init__(self, input_size,
                  embedding_size=config["embedding_size"],
                  hidden_size=config["hidden_size"]):
-        super(Encoder, self).__init__()
+        super(EncoderGRU, self).__init__()
         self.hidden_size = hidden_size
         self.embedding = nn.Embedding(input_size, embedding_size)
         self.gru = nn.GRU(embedding_size, hidden_size, 1)

@@ -10,5 +10,5 @@ default = {
 en_path = "data/training/europarl-v7.fr-en.en"
 fr_path = "data/training/europarl-v7.fr-en.fr"
 
-encoder_model = "models/encoder.pkl"
-decoder_model = "models/decoder.pkl"
+gru_encoder_model = "models/gru_encoder.pkl"
+gru_decoder_model = "models/gru_decoder.pkl"
