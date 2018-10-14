@@ -34,7 +34,6 @@ class LanguageLoader(object):
                 self.init_language(output_path)
             pickle.dump(self.output_dict, open("data/output_dict.p", "wb"))
             pickle.dump(self.output_vecs, open("data/output_vecs.p", "wb"))
-
             print("Output language loaded.")
 
         self.input_vecs, self.output_vecs = self.filter(

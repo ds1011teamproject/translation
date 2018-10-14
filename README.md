@@ -37,11 +37,17 @@ training/europarl-v7.fr-en.fr
 $(HPC) module load anaconda3/5.3.0
 $ conda create -n mt python=3.6
 $ conda activate mt
-(mt)$ conda install pytorch torchvision -c pytorch
-(mt)$ python main.py
+$ conda install pytorch torchvision -c pytorch
 ```
 
 See [this guide for detailed instructions on how to run on HPC](https://github.com/mvishwali28/quantifier-rnn-learning).
+
+## Run
+
+```
+$ mkdir data
+$ python main.py
+```
 
 ## RNN encoder-decoder
 
