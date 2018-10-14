@@ -34,7 +34,7 @@ training/europarl-v7.fr-en.fr
 ## Requirements
 
 ```
-$(HPC) module load anaconda3/5.3.0
+$ module load anaconda3/5.3.0  # HPC only
 $ conda create -n mt python=3.6
 $ conda activate mt
 $ conda install pytorch torchvision -c pytorch

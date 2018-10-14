@@ -13,7 +13,7 @@ def main(data, rnn):
     losses = []
     for epoch in range(config["num_epochs"]):
 
-        print("{} epoch={} {}".format("=" * 20, epoch, "=" * 20))
+        print("{} epoch: {} {}".format("=" * 20, epoch, "=" * 20))
 
         for i, batch in enumerate(data.sentences(config["num_batches"])):
             input_, target = batch
