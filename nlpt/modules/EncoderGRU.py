@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
 
-from nlpt.config import basic_settings
+from nlpt.config import basic_hparams
+from nlpt.config import basic_conf as conf
 
-config = basic_settings.default
+config = basic_hparams.default
 
 
 class EncoderGRU(nn.Module):
@@ -19,10 +20,10 @@ class EncoderGRU(nn.Module):
         self.embedding = nn.Embedding(input_size, embedding_size)
         self.gru = nn.GRU(embedding_size, hidden_size, 1)
 
-    def forward(self, input, hidden):
-        embedded = self.embedding(input).view(1, 1, -1)
+    def forward(self, _input, hidden):
+        embedded = self.embedding(_input).view(1, 1, -1)
         output, hidden_state = self.gru(embedded, hidden)
         return output, hidden_state
 
     def first_hidden(self):
-        return torch.FloatTensor(1, 1, self.hidden_size).zero_()
+        return torch.FloatTensor(1, 1, self.hidden_size).to(conf.DEVICE).zero_()

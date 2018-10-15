@@ -1,11 +1,10 @@
-default = {
-    "embedding_size": 500,
-    "hidden_size": 1000,
-    "max_length": 20,
-    "num_batches": 7500,
-    "num_epochs": 100,
-    "vocab_size": 15000,
-}
+"""
+non hyperparameter settings
+"""
+
+import torch
+
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 en_path = u"data/training/europarl-v7.fr-en.en"
 fr_path = u"data/training/europarl-v7.fr-en.fr"

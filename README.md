@@ -14,26 +14,37 @@ Team project for [Natural Language Processing with Representation Learning
 [[download] Common Crawl corpus](http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz)
 
 ## Installation - Prod
+Do this installation if you are running in prod and will not change code
+
+Remember to uninstall if you are going back into dev mode
 ```
 $ git clone https://github.com/ds1011teamproject/translation.git
 $ bash install.sh
-# if you want to download the corpus then:
+
+# if you want to download the corpus then also:
 $ bash download_data.sh
 ```
 
+#### Uninstall - prod
+```
+pip uninstall nlpt
+```
+
 ## Installation - Dev
+Do this installation if you are going to experiment with the code
 ```
 $ git clone https://github.com/ds1011teamproject/translation.git
 $ mkdir data
 $ mkdir models
 ```
 
-**!** Don't forget to update the data file paths in `nlpt.config.basic_settings.py`.
+**!** If you are using different folders for data and models, update the data file paths in `nlpt.config.basic_conf.py`.
 
 
 ## Releasing Updates:
-
-
+Please do the following items when pushing a change out
+- increment version on setup.py
+- add change notes to changelogs/README.md
 
 
 ## Running on HPC
@@ -54,18 +65,18 @@ On HPC, you might need to add the following line to your `~/.bashrc`:
 . /share/apps/anaconda3/5.3.0/etc/profile.d/conda.sh
 ```
 
-## Execution - Prod
+## Running in installed Prod mode
 This will execute the version that is installed in site-packages
 ```
 $ python -m nlpt.main
 #TODO: add argparse argument handling
 ```
 
-## Execution - Dev
+## Running in uninstalled Dev mode
 This will execute the version that is installed in local directory:
 ```
 # be in the root director of the project (where main.py is located)
-$ python -m main
+$ python -m dev_main
 #TODO: add argparse argument handling
 ```
 

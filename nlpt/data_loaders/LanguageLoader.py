@@ -4,6 +4,7 @@ import torch
 import pickle
 
 from nlpt.common.utils import read_data
+from nlpt.config import basic_conf as conf
 
 
 class LanguageLoader(object):
@@ -70,7 +71,7 @@ class LanguageLoader(object):
         return sentence
 
     def vectorize(self, word, list):
-        vec = torch.LongTensor(1, 1).zero_()
+        vec = torch.LongTensor(1, 1).to(conf.DEVICE).zero_()
         index = 2 if word not in list else list.index(word)
         vec[0][0] = index
         return vec

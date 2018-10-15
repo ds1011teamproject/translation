@@ -1,9 +1,9 @@
 from nlpt.data_loaders.LanguageLoader import LanguageLoader
 from nlpt.modules.GRU import GRU
-from nlpt.config import basic_settings
-import torch
+from nlpt.config import basic_conf
+from nlpt.config import basic_hparams
 
-config = basic_settings.default
+config = basic_hparams.default
 
 
 def main(data, rnn):
@@ -26,7 +26,7 @@ def main(data, rnn):
             loss, outputs = rnn.train(input_, target)  # .copy())
             losses.append(loss)
 
-            if (i % 100 == 0):
+            if i % 100 == 0:
                 print("Loss at step {}: {:.2f}".format(i, loss))
                 print("Truth: \"{}\"".format(data.vec_to_sentence(target)))
                 print("Guess: \"{}\"\n".format(
@@ -46,14 +46,9 @@ def translate(data, rnn):
 
 if __name__ == "__main__":
     """
-    Usage: $ python main.py
+    Usage: $ python main_dev.py
     """
-    global DEVICE
-    DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-    data = LanguageLoader(basic_settings.en_path, basic_settings.fr_path,
-                          config["vocab_size"], config["max_length"])
-    rnn = GRU(data.input_size, data.output_size)  # TODO: .cuda()
-
-    main(data, rnn)
+    run_data = LanguageLoader(basic_conf.en_path, basic_conf.fr_path, config["vocab_size"], config["max_length"])
+    run_rnn = GRU(run_data.input_size, run_data.output_size)
+    main(run_data, run_rnn)
     # translate(data, rnn)

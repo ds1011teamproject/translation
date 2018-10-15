@@ -1,5 +1,15 @@
 """
 Responsible for managing the initialization, training, saving and load of models
+controls:
+- load pickles bool
+- save pickles bool
+- maintain best model save
+- force device
+- encoder Constructor
+- decoder Constructor
+- hyperparameters
+- save results bool
+- result outpath
 """
 
 

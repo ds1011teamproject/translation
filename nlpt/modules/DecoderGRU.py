@@ -1,8 +1,8 @@
 import torch.nn as nn
 
-from nlpt.config import basic_settings
+from nlpt.config import basic_hparams
 
-config = basic_settings.default
+config = basic_hparams.default
 
 
 class DecoderGRU(nn.Module):
@@ -19,8 +19,8 @@ class DecoderGRU(nn.Module):
         self.linear = nn.Linear(hidden_size, input_size)
         self.softmax = nn.Softmax(dim=1)
 
-    def forward(self, input, hidden):
-        embedded = self.embedding(input)
+    def forward(self, _input, hidden):
+        embedded = self.embedding(_input)
         output, hidden_state = self.gru(embedded, hidden)
         output = output.view(1, output.size(2))
         linear = self.linear(output)
