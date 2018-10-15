@@ -13,32 +13,35 @@ Team project for [Natural Language Processing with Representation Learning
 
 [[download] Common Crawl corpus](http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz)
 
-### Download on HPC
-
+## Installation - with data
 ```
-$ cd /scratch/<netID>/
-$ wget http://www.statmt.org/wmt13/training-parallel-europarl-v7.tgz
-$ tar -xvzf training-parallel-europarl-v7.tgz
-training/europarl-v7.cs-en.cs
-training/europarl-v7.cs-en.en
-training/europarl-v7.de-en.de
-training/europarl-v7.de-en.en
-training/europarl-v7.es-en.en
-training/europarl-v7.es-en.es
-training/europarl-v7.fr-en.en
-training/europarl-v7.fr-en.fr
+$ git clone https://github.com/ds1011teamproject/translation.git
+$ bash install.sh
 ```
 
-**!** Don't forget to update the data file paths in `settings.py`.
+## Installation - without data
+```
+$ git clone https://github.com/ds1011teamproject/translation.git
+$ python setup.py install clean
+$ mkdir data
+$ mkdir data/training
+$ mkdir models
+```
+**!** Don't forget to update the data file paths in `nlpt.config.basic_settings.py`.
 
-## Requirements
+
+## Releasing Updates:
+
+
+
+
+## Running on HPC
 
 ```
 $ module load anaconda3/5.3.0  # HPC only
 $ module load cuda/9.0.176 cudnn/9.0v7.0.5  # HPC only
 $ conda create -n mt python=3.6
 $ conda activate mt
-$ conda install pytorch torchvision numpy pandas tqdm -c pytorch
 $ python setup.py install clean
 ```
 
@@ -53,9 +56,8 @@ On HPC, you might need to add the following line to your `~/.bashrc`:
 ## Run
 
 ```
-$ mkdir data
-$ mkdir models
 $ python -m nlpt.main
+#TODO: add argparse argument handling
 ```
 
 ## RNN encoder-decoder

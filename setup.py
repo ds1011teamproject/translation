@@ -26,7 +26,7 @@ setup(
     author="nlpteam",
     description="base code base for the nlp project",
     packages=find_packages(),  # finds all directories and sub directories with __init__.py
-    long_description=read('README.md'),
+    long_description=read('changelog.md'),
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "License :: Public Domain",
