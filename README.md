@@ -13,18 +13,12 @@ Team project for [Natural Language Processing with Representation Learning
 
 [[download] Common Crawl corpus](http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz)
 
-## Installation - Prod - with data
+## Installation - Prod
 ```
 $ git clone https://github.com/ds1011teamproject/translation.git
 $ bash install.sh
-```
-
-## Installation - Prod - without data
-```
-$ git clone https://github.com/ds1011teamproject/translation.git
-$ python setup.py install clean
-$ mkdir data
-$ mkdir models
+# if you want to download the corpus then:
+$ bash download_data.sh
 ```
 
 ## Installation - Dev
