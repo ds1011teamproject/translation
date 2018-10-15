@@ -75,7 +75,7 @@ $ python -m nlpt.main
 ## Running in uninstalled Dev mode
 This will execute the version that is installed in local directory:
 ```
-# be in the root director of the project (where main.py is located)
+# be in the root director of the project (where dev_main.py is located)
 $ python -m dev_main
 #TODO: add argparse argument handling
 ```
