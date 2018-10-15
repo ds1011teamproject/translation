@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torch.autograd import Variable
 
 from nlpt.config import basic_settings
 
@@ -26,4 +25,4 @@ class EncoderGRU(nn.Module):
         return output, hidden_state
 
     def first_hidden(self):
-        return Variable(torch.FloatTensor(1, 1, self.hidden_size).zero_())
+        return torch.FloatTensor(1, 1, self.hidden_size).zero_()

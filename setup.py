@@ -36,7 +36,6 @@ setup(
         'numpy',
         'pandas',
         'torch>=0.4',
-        'torchvision>=0.2',
         'tqdm'
     ],
     python_requires='==3.6.*',

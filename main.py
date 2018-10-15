@@ -1,6 +1,7 @@
 from nlpt.data_loaders.LanguageLoader import LanguageLoader
 from nlpt.modules.GRU import GRU
 from nlpt.config import basic_settings
+import torch
 
 config = basic_settings.default
 
@@ -47,6 +48,9 @@ if __name__ == "__main__":
     """
     Usage: $ python main.py
     """
+    global DEVICE
+    DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
     data = LanguageLoader(basic_settings.en_path, basic_settings.fr_path,
                           config["vocab_size"], config["max_length"])
     rnn = GRU(data.input_size, data.output_size)  # TODO: .cuda()

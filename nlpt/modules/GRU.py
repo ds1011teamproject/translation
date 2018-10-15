@@ -4,7 +4,6 @@ from torch import nn
 import torch.optim as optim
 from nlpt.modules.EncoderGRU import EncoderGRU
 from nlpt.modules.DecoderGRU import DecoderGRU
-from torch.autograd import Variable
 from nlpt.config import basic_settings
 
 
@@ -35,17 +34,15 @@ class GRU(object):
         # Encoder
         hidden_state = self.encoder.first_hidden()
         for ivec in input:
-            _, hidden_state = self.encoder.forward(
-                Variable(ivec), hidden_state)
+            _, hidden_state = self.encoder.forward(ivec, hidden_state)
 
         # Decoder
         total_loss, outputs = 0, []
         for i in range(len(target) - 1):
-            _, softmax, hidden_state = self.decoder.forward(
-                Variable(target[i]), hidden_state)
+            _, softmax, hidden_state = self.decoder.forward(target[i], hidden_state)
 
             outputs.append(np.argmax(softmax.data.numpy(), 1)[:, np.newaxis])
-            total_loss += self.loss(softmax, Variable(target[i + 1][0]))
+            total_loss += self.loss(softmax, target[i + 1][0])
 
         total_loss /= len(outputs)
         total_loss.backward()
@@ -62,8 +59,7 @@ class GRU(object):
 
         # Encoder
         for ivec in input:
-            _, hidden_state = self.encoder.forward(
-                Variable(ivec), hidden_state)
+            _, hidden_state = self.encoder.forward(ivec, hidden_state)
 
         sentence = []
         input = self.sos
@@ -72,7 +68,7 @@ class GRU(object):
         while input.data[0, 0] != 1:
             output, _, hidden_state = self.decoder.forward(input, hidden_state)
             word = np.argmax(output.data.numpy()).reshape((1, 1))
-            input = Variable(torch.LongTensor(word))
+            input = torch.LongTensor(word)
             sentence.append(word)
 
         return sentence

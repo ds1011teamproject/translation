@@ -13,20 +13,27 @@ Team project for [Natural Language Processing with Representation Learning
 
 [[download] Common Crawl corpus](http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz)
 
-## Installation - with data
+## Installation - Prod - with data
 ```
 $ git clone https://github.com/ds1011teamproject/translation.git
 $ bash install.sh
 ```
 
-## Installation - without data
+## Installation - Prod - without data
 ```
 $ git clone https://github.com/ds1011teamproject/translation.git
 $ python setup.py install clean
 $ mkdir data
-$ mkdir data/training
 $ mkdir models
 ```
+
+## Installation - Dev
+```
+$ git clone https://github.com/ds1011teamproject/translation.git
+$ mkdir data
+$ mkdir models
+```
+
 **!** Don't forget to update the data file paths in `nlpt.config.basic_settings.py`.
 
 
@@ -53,10 +60,18 @@ On HPC, you might need to add the following line to your `~/.bashrc`:
 . /share/apps/anaconda3/5.3.0/etc/profile.d/conda.sh
 ```
 
-## Run
+## Execution - Prod
 
 ```
 $ python -m nlpt.main
+#TODO: add argparse argument handling
+```
+
+## Execution - Dev
+
+```
+# be in the root director of the project (where main.py is located)
+$ python -m main.py
 #TODO: add argparse argument handling
 ```
 
