@@ -38,7 +38,8 @@ $ module load anaconda3/5.3.0  # HPC only
 $ module load cuda/9.0.176 cudnn/9.0v7.0.5  # HPC only
 $ conda create -n mt python=3.6
 $ conda activate mt
-$ conda install pytorch torchvision -c pytorch
+$ conda install pytorch torchvision numpy pandas tqdm -c pytorch
+$ python setup.py install clean
 ```
 
 See [this guide for detailed instructions on how to run on HPC](https://github.com/mvishwali28/quantifier-rnn-learning).
@@ -54,7 +55,7 @@ On HPC, you might need to add the following line to your `~/.bashrc`:
 ```
 $ mkdir data
 $ mkdir models
-$ python main.py
+$ python -m nlpt.main
 ```
 
 ## RNN encoder-decoder

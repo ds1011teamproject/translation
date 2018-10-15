@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-from nlptranslate.config import basic_settings
+from nlpt.config import basic_settings
 
 config = basic_settings.default
 

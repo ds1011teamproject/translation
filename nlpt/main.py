@@ -1,6 +1,6 @@
-from nlptranslate.data_loaders.LanguageLoader import LanguageLoader
-from nlptranslate.modules.GRU import GRU
-from nlptranslate.config import basic_settings
+from nlpt.data_loaders.LanguageLoader import LanguageLoader
+from nlpt.modules.GRU import GRU
+from nlpt.config import basic_settings
 
 config = basic_settings.default
 

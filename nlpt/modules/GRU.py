@@ -2,10 +2,10 @@ import numpy as np
 import torch
 from torch import nn
 import torch.optim as optim
-from nlptranslate.modules.EncoderGRU import EncoderGRU
-from nlptranslate.modules.DecoderGRU import DecoderGRU
+from nlpt.modules.EncoderGRU import EncoderGRU
+from nlpt.modules.DecoderGRU import DecoderGRU
 from torch.autograd import Variable
-from nlptranslate.config import basic_settings
+from nlpt.config import basic_settings
 
 
 class GRU(object):

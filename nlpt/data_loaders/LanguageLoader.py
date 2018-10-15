@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import pickle
 
-from nlptranslate.common.utils import read_data
+from nlpt.common.utils import read_data
 
 
 class LanguageLoader(object):
