@@ -61,17 +61,17 @@ On HPC, you might need to add the following line to your `~/.bashrc`:
 ```
 
 ## Execution - Prod
-
+This will execute the version that is installed in site-packages
 ```
 $ python -m nlpt.main
 #TODO: add argparse argument handling
 ```
 
 ## Execution - Dev
-
+This will execute the version that is installed in local directory:
 ```
 # be in the root director of the project (where main.py is located)
-$ python -m main.py
+$ python -m main
 #TODO: add argparse argument handling
 ```
 
