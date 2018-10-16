@@ -1,4 +1,4 @@
-### Version 0.2.1 - 10/15/2018
+### Version 0.2.0 - 10/15/2018
 Changes:
 - more reorganization, got rid of the installer, it felt more clunky than useful
 - main was gutted and mostly moved to ModelManager.py
