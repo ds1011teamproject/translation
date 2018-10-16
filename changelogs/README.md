@@ -11,8 +11,7 @@ Changes:
 - touched up all of the readme
 
 Comments:
-- there is still a lot we can do to get this code base ready for the kick off of the project
-- we're now at the point that we can start working independantly and contributing code in parallel, but over communicate nonetheless!
+- we're now at the point that we can start working independantly and contributing code in parallel, but I hope we can over-communicate nonetheless!
 
 ### Version 0.1.1 - 10/15/2018
 Changes:

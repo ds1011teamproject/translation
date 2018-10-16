@@ -2,7 +2,7 @@
 Entry point for the program, argparse
 """
 
-from lib import ModelManager as mm
+from libs import ModelManager as mm
 # todo: implememnt argparse
 import argparse
 import logging
