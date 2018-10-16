@@ -1,3 +1,11 @@
+### Version 0.2.1 - 10/16/2018
+Changes:
+- add argparse usage in main enter point (for data files and configuration files)
+- reformat config files (basic_conf/basic_hparams) with pre-defined keys
+
+Comments:
+- discuss user input config file format with team, require some design of hyperparmeter tuning process.
+
 ### Version 0.2.0 - 10/15/2018
 Changes:
 - more reorganization, got rid of the installer, it felt more clunky than useful

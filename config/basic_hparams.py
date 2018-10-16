@@ -1,12 +1,14 @@
 """
 hyperparameter settings, defaults
 """
+from config.constants import HyperParamKey
+
 
 DEFAULT_HPARAMS = {
-    "embedding_size": 500,
-    "hidden_size": 1000,
-    "max_length": 20,
-    "num_batches": 7500,
-    "num_epochs": 1000,
-    "vocab_size": 15000,
+    HyperParamKey.EMB_SIZE: 500,
+    HyperParamKey.HIDDEN_SIZE: 1000,
+    HyperParamKey.MAX_LEN: 20,
+    HyperParamKey.NUM_BATCH: 7500,
+    HyperParamKey.NUM_EPOCH: 1000,
+    HyperParamKey.VOC_SIZE: 15000,
 }

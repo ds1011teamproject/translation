@@ -5,12 +5,15 @@ import logging
 import torch
 import sys
 
+from config.constants import PathKey
+
+
 DEFAULT_PATHS = {
-    'input_lang': 'data/training/europarl-v7.fr-en.en',
-    'output_lang': 'data/training/europarl-v7.fr-en.fr',
-    'encoder_out': 'model_saves/gru_encoder.pkl',
-    'decoder_out': 'model_saves/gru_decoder.pkl',
-    'results_df': 'model_saves/results.p'
+    PathKey.INPUT_LANG: 'data/training/europarl-v7.fr-en.en',
+    PathKey.OUTPUT_LANG: 'data/training/europarl-v7.fr-en.fr',
+    PathKey.ENC_SAVE: 'model_saves/gru_encoder.pkl',
+    PathKey.DEC_SAVE: 'model_saves/gru_decoder.pkl',
+    PathKey.RESULT_SAVE: 'model_saves/results.p'
 }
 
 LOG_FORMAT = '%(levelname)-8s %(message)s'
