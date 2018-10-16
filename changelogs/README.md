@@ -1,3 +1,23 @@
+### Version 0.2.1 - 10/15/2018
+Changes:
+- more reorganization, got rid of the installer, it felt more clunky than useful
+- main was gutted and mostly moved to ModelManager.py
+- Added a basic registry for models so that we can just call ModelManager.set_model('GRU') for initializing the model
+    - created a super class for models called TranslationModel that enforces the interface between GRU and ModelManager
+- wrote down many todos
+- enabled notebook support, see main_nb.ipynb, initialize ModelManager with extra parameter tqdm_mode='notebook'
+- added some examples of logging usage in main and in ModelManager.py
+    - init function is in the config.basic_conf.py, should only call this 1x
+- touched up all of the readme
+
+Comments:
+- there is still a lot we can do to get this code base ready for the kick off of the project
+- we're now at the point that we can start working independantly and contributing code in parallel, but over communicate nonetheless!
+
+### Version 0.1.1 - 10/15/2018
+Changes:
+- Bug fix in GRU.py to the training loop
+
 ### Version 0.1.0 - 10/15/2018
 Changes:
 - reorganized package tree structure

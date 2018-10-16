@@ -2,7 +2,7 @@
 hyperparameter settings, defaults
 """
 
-default = {
+DEFAULT_HPARAMS = {
     "embedding_size": 500,
     "hidden_size": 1000,
     "max_length": 20,
