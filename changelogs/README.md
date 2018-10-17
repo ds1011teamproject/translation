@@ -1,3 +1,13 @@
+### Version 0.3.0 - 10/17/2018
+Changes:
+- further restructure of training models and modules by algorithm
+- add default logging setup and write to file
+
+Comments:
+- discuss log file save
+- my next to-do is to implement RNN with LSTM and improve the abstraction of RNN 
+- A simple note: *please concatenate the sentences into one log message, rather than multiple lines, when they are highly related*
+
 ### Version 0.2.1 - 10/16/2018
 Changes:
 - add argparse usage in main enter point (for data files and configuration files)

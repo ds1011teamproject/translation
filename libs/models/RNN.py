@@ -1,5 +1,6 @@
 """
-Implements TranslationModel
+RNN-Encoder-Decoder Model:
+Fundamental rnn based encoder-decoder system with GRU/LSTM
 """
 
 import numpy as np
@@ -7,17 +8,17 @@ import torch
 from torch import nn
 import torch.optim as optim
 from libs.models.TranslationModel import TranslationModel
-from libs.models.modules.EncoderGRU import EncoderGRU
-from libs.models.modules.DecoderGRU import DecoderGRU
+# todo: remove static import of encoder/decoder, pass to __init__ as params
+from libs.models.modules.GRU import Encoder, Decoder
 from config import basic_conf as conf
 
 
-class GRU(TranslationModel):
+class RNN(TranslationModel):
     def __init__(self, input_size, output_size):
-        super(GRU, self).__init__()
+        super(RNN, self).__init__()
 
-        self.encoder = EncoderGRU(input_size).to(conf.DEVICE)
-        self.decoder = DecoderGRU(output_size).to(conf.DEVICE)
+        self.encoder = Encoder(input_size).to(conf.DEVICE)
+        self.decoder = Decoder(output_size).to(conf.DEVICE)
 
         self.loss = nn.CrossEntropyLoss()
         self.encoder_optimizer = optim.Adam(self.encoder.parameters())

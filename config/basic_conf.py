@@ -2,10 +2,11 @@
 non hyperparameter settings
 """
 import logging
+import logging.config
 import torch
 import sys
 
-from config.constants import PathKey
+from config.constants import PathKey, LogConfig
 
 
 DEFAULT_PATHS = {
@@ -16,13 +17,14 @@ DEFAULT_PATHS = {
     PathKey.RESULT_SAVE: 'model_saves/results.p'
 }
 
-LOG_FORMAT = '%(levelname)-8s %(message)s'
-LOG_STREAM = sys.stdout
-LOG_LEVEL_DEFAULT = logging.DEBUG
-
 # todo: need to deprecate this and use the ref in ModelManager
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+LOG_LEVEL_DEFAULT = getattr(logging, LogConfig['handlers']['default']['level'])
 
-def init_logger(loglevel=LOG_LEVEL_DEFAULT):
-    logging.basicConfig(stream=LOG_STREAM, level=loglevel, format=LOG_FORMAT)
+
+def init_logger(loglevel=LOG_LEVEL_DEFAULT, logfile='mt.log'):
+    logging.getLogger('__main__').setLevel(loglevel)
+    LogConfig['handlers']['default']['filename'] = logfile
+    logging.config.dictConfig(LogConfig)
+

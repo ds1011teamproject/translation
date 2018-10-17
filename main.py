@@ -5,10 +5,12 @@ Entry point for the program, argparse
 import os
 import argparse
 import logging
+import logging.config
 
 from libs import ModelManager as mm
 from config import basic_conf as conf
-from config.constants import PathKey, HyperParamKey
+from config.constants import PathKey, LogConfig
+from libs.models.registry import modelRegister
 
 
 # logger
@@ -34,10 +36,13 @@ logger.info("Paths to override: {}".format(paths_new))
 
 # todo: user input config file format TBD
 
+# List implemented models
+logger.info("Implemented models: {}".format(modelRegister.model_list))
+
 # todo --- MAIN HERE ---
 mgr = mm.ModelManager(hparams=None, path_overrides=paths_new)
 mgr.load_data()
-mgr.set_model('GRU')
+mgr.set_model(modelRegister.RNN)
 mgr.train()
 
 

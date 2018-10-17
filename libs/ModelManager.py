@@ -10,6 +10,7 @@ from config import basic_conf as conf
 from tqdm import tqdm_notebook
 from tqdm import tqdm
 import logging
+
 logger = logging.getLogger('__main__')
 
 
@@ -48,13 +49,20 @@ class ModelManager:
         self.loaders = {}  # memory pointers to the data loaders
 
         # logging init
-        logger.info("Initialization Complete: ")
+        logger.info("Initialization Complete")
+        # logger.info(self.model_details)  # give a lot of attributes with 'None', moved to self.reset()
+
+    @property
+    def model_details(self):
+        info = '\n*********** Training Model Details ***********'
         for key in self.__dict__.keys():
             if isinstance(self.__dict__[key], dict):
                 for sub_key in self.__dict__[key].keys():
-                    logger.debug("-- self.%s.%s = %s" % (key, sub_key, str(self.__dict__[key][sub_key])))
+                    info += "\n-- self.%s.%s = %s" % (key, sub_key, str(self.__dict__[key][sub_key]))
             else:
-                logger.debug("-- self.%s = %s" % (key, str(self.__dict__[key])))
+                info += "\n-- self.%s = %s" % (key, str(self.__dict__[key]))
+        info += '\n************ End of Model Details ************'
+        return info
 
     def load_data(self):
         logger.info("loading data into LanguageLoader")
@@ -87,6 +95,8 @@ class ModelManager:
         """ reinitializes the active model by calling the constructor """
         # todo: the model should have no dependency on the loader, these dependancies need to be removed
         self.model = self.model_constructor(self.loader.input_size, self.loader.output_size)
+        # report model details after each reset
+        logger.info(self.model_details)
 
     def train(self):
         """ continue to train the current model """
@@ -100,10 +110,11 @@ class ModelManager:
                 losses.append(loss)
 
                 if i % 100 == 0:
-                    logger.info("Loss at step {}: {:.2f}".format(i, loss))
-                    logger.info("Truth: \"{}\"".format(self.loader.vec_to_sentence(target)))
-                    logger.info("Guess: \"{}\"\n".format(
-                        self.loader.vec_to_sentence(outputs[:-1])))
+                    msg = "Loss at step {}: {:.2f}".format(i, loss)
+                    msg += "\nTruth: \"{}\"".format(self.loader.vec_to_sentence(target))
+                    msg += "\nGuess: \"{}\"\n".format(
+                        self.loader.vec_to_sentence(outputs[:-1]))
+                    logger.info(msg)
                     self.save_model()
 
 

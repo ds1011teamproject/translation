@@ -1,10 +1,13 @@
 from collections import Counter
+import logging
 import numpy as np
 import torch
 import pickle
 
 from libs.common.utils import read_data
 from config import basic_conf as conf
+
+logger = logging.getLogger('__main__')
 
 
 class LanguageLoader(object):
@@ -22,20 +25,20 @@ class LanguageLoader(object):
             self.output_vecs = pickle.load(open("data/output_vecs.p", "rb"))
             self.output_size = len(self.output_dict)
 
-            print("Languages found and loaded.")
+            logger.info("Languages found and loaded.")
 
         except IOError:
             self.input_dict, self.input_vecs, self.input_size = \
                 self.init_language(input_path)
             pickle.dump(self.input_dict, open("data/input_dict.p", "wb"))
             pickle.dump(self.input_vecs, open("data/input_vecs.p", "wb"))
-            print("Input language loaded.")
+            logger.info("Input language loaded.")
 
             self.output_dict, self.output_vecs, self.output_size = \
                 self.init_language(output_path)
             pickle.dump(self.output_dict, open("data/output_dict.p", "wb"))
             pickle.dump(self.output_vecs, open("data/output_vecs.p", "wb"))
-            print("Output language loaded.")
+            logger.info("Output language loaded.")
 
         self.input_vecs, self.output_vecs = self.filter(
             self.input_vecs, self.output_vecs)
