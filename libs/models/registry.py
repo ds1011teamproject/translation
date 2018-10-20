@@ -1,12 +1,12 @@
 """
 registry for model constructors, used by ModelManager to lookup model constructors
 """
-from libs.models.RNN import RNN
+from libs.models.BagOfWords import BagOfWords
 
 # todo make the registry dynamic based on the file name
 
 reg = {
-    'RNN': RNN
+    'BagOfWords': BagOfWords
 }
 
 
