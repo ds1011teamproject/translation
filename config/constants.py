@@ -2,6 +2,7 @@ class PathKey:
     TEST_PATH = 'test_path'
     TRAIN_PATH = 'train_path'
     MODEL_SAVES = 'model_saves'
+    MODEL_PATH = 'model_path'
 
 
 class HyperParamKey:
@@ -25,8 +26,32 @@ class HyperParamKey:
     CRITERION = 'criterion'
 
 
+class ControlKey:
+    SAVE_BEST_MODEL = 'save_best_model'
+    SAVE_EACH_EPOCH = 'save_each_epoch'
+
+
 class LoaderParamKey:
     ACT_VOCAB_SIZE = 'act_vocab_size'
+
+
+class StateKey:
+    MODEL_STATE = 'model_state'
+    OPTIM_STATE = 'optim_state'
+    SCHED_STATE = 'sched_state'
+    ITER_CURVES = 'iter_curves'
+    EPOCH_CURVES = 'epoch_curves'
+    HPARAMS = 'hparams'
+    LPARAMS = 'lparams'
+    CPARAMS = 'cparams'
+    CUR_EPOCH = 'cur_epoch'
+    LABEL = 'label'
+    META = 'meta'
+
+
+class LoadingKey:
+    LOAD_CHECKPOINT = 'checkpoint'
+    LOAD_BEST = 'best'
 
 
 # Reference: nltk.corpus.stopwords.fileids()

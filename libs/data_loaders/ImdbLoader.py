@@ -1,7 +1,9 @@
 """
 child class implementation that loads the imdb data
 
-I hacked this up as an example of an implementation of a data loader handler, it is pretty messy still...
+I hacked this up as an example of an implementation of a data loader handler, it is pretty messy ...
+
+The idea is for new projects to implement their own loaders
 """
 from libs.data_loaders.BaseLoader import BaseLoader
 import numpy as np
@@ -39,11 +41,13 @@ class ImdbLoader(BaseLoader):
         test_set = construct_dataset(self.io_paths[PathKey.TEST_PATH]
                                      , self.hparams[HyperParamKey.TEST_SIZE])
 
+        logger.info("extracting ngrams from train/val set...")
         train_and_val_data = extract_ngrams(train_and_val_set,
                                             self.hparams[HyperParamKey.NGRAM_SIZE],
                                             self.tqdm,
                                             remove_punc=self.hparams[HyperParamKey.REMOVE_PUNC])
 
+        logger.info("extracting ngrams from test set...")
         test_data = extract_ngrams(test_set,
                                    self.hparams[HyperParamKey.NGRAM_SIZE],
                                    self.tqdm,
@@ -187,7 +191,6 @@ def extract_ngrams(dataset, n, tqdm, remove_punc=True):
     :param remove_punc: remove all punctuations
     :return: dataset with ngrams extracted
     """
-    logger.info("extracting ngrams ...")
     for i in tqdm(range(len(dataset))):
         text_datum = dataset[i].raw_text
         cur_ngrams, tokens = extract_ngram_from_text(text_datum, n, remove_punc)
@@ -251,6 +254,7 @@ def construct_ngram_indexer(ngram_counter_list, topk, tqdm):
     index 1 reserved for <unk>
     :param ngram_counter_list: list of counters
     :param topk: int, # of words to keep in the vocabulary - not counting pad/unk
+    :param tqdm: tqdm module initialized in ModelManager
     :return ngram2idx: a dictionary that maps ngram to an unique index
     """
     rt_dict = {PAD_TOKEN: PAD_IDX, UNK_TOKEN: UNK_IDX}
@@ -313,8 +317,8 @@ def imdb_collate_func(batch):
 
     """ check types on the np array """
     nparr = np.array(data_list)
-    rtTensor = torch.from_numpy(nparr).to(DEVICE)
+    rt_tensor = torch.from_numpy(nparr).to(DEVICE)
 
-    return [rtTensor,
+    return [rt_tensor,
             torch.LongTensor(length_list).to(DEVICE),
             torch.LongTensor(label_list).to(DEVICE)]

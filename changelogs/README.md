@@ -1,3 +1,33 @@
+### Version 0.3.1 - 10/20/2018
+Changes:
+- branched the code to 'homework' with the aim of catering to using the ModelManager for the homework
+- added \_\_version\_\_ to ModelManager to track current version
+- replaced data with data from homework 1, the data should go into data/aclImdb/
+- added BaseLoader Class as the Loader interface
+- implemented ImdbLoader as a example of how the loader should be implemented
+- implemented a loader registry in data_loaders
+- renamed the model interface to BaseModel
+- added a BagOfWords Model that implements the BaseModel
+- removed the RNN model for this branch
+- .gitignore now doesn't ignore the entire model_saves folder, rather only the .tar files
+- New ModelManager functionality:
+    - rolled up ModelManager.io_paths into ModelManager.cparams to denote "Control Parameters"
+    - model saves at each epoch and new best
+    - can control whether these happen using ModelManager.cparams
+    - can save final models after training with a meta_string that is saved to a markdown file
+    - changed the set_model method to new_model, can now take a label parameter that determines the subfolder under model_saves that the model saves files (defaults to /scratch)
+    - implemented the training curves on the BaseModel, comes in 2 flavors:
+        - 1 curve that is snapped at each model check iteration. A check iteration is each time we check for early stop, which can happen multiple times in each epoch. There is a hyperparameter that controls for this behaviour
+        - 1 curve that is snapped at each model epoch
+    - implemented a basic curve grapher: ModelManager.graph_training_curves(), see example output in model_saves/scratch/
+    - implemented saving and restarting training, see use_guide.ipynb for details
+    - implemented some other ease-of-use functionality, see use_guide.ipynb 
+    
+
+Comments:
+- the changes were pretty extensive, refer to use_guide.ipynb to see a demo of all the new functionality
+
+
 ### Version 0.3.0 - 10/17/2018
 Changes:
 - further restructure of training models and modules by algorithm

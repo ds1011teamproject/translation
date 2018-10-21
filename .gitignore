@@ -106,6 +106,9 @@ venv.bak/
 
 # Customize
 data/
-model_saves/
 .DS_Store
+
+# Model Saves
+*.tar
+
 

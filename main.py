@@ -22,6 +22,8 @@ parser.add_argument('-p', '--data', dest='data_path',
 parser.add_argument('-c', '--config', dest='config_path',
                     help='path to configuration files')
 args = parser.parse_args()
+# todo: add kwarg overrides for hparams
+
 data_path = args.data_path if getattr(args, 'data_path') else None
 config_path = args.config_path if getattr(args, 'config_path') else None
 
@@ -38,7 +40,7 @@ logger.info("Paths to override: {}".format(paths_new))
 logger.info("Implemented models: {}".format(mm.modelRegister.model_list))
 
 # todo --- MAIN HERE ---
-mgr = mm.ModelManager(hparams=None, path_overrides=paths_new)
+mgr = mm.ModelManager(hparams=None, control_overrides=paths_new)
 mgr.load_data(mm.loaderRegister.IMDB)
 mgr.new_model(mm.modelRegister.BagOfWords)
 mgr.train()

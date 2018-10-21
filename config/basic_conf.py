@@ -4,10 +4,11 @@ non hyperparameter settings
 import logging
 import logging.config
 import torch
-from config.constants import PathKey, LogConfig
+from config.constants import PathKey, LogConfig, ControlKey
 
-
-DEFAULT_PATHS = {
+DEFAULT_CONTROLS = {
+    ControlKey.SAVE_BEST_MODEL: True,
+    ControlKey.SAVE_EACH_EPOCH: True,
     PathKey.TEST_PATH: 'data/aclImdb/test/',
     PathKey.TRAIN_PATH: 'data/aclImdb/train/',
     PathKey.MODEL_SAVES: 'model_saves/'
