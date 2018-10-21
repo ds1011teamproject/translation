@@ -24,6 +24,7 @@ def init_logger(loglevel=LOG_LEVEL_DEFAULT, logfile='mt.log'):
         LogConfig['loggers']['']['handlers'] = ['console']
         LogConfig['handlers']['default']['filename'] = 'mt.log'
     else:
+        LogConfig['loggers']['']['handlers'] = ['console', 'default']
         LogConfig['handlers']['default']['filename'] = logfile
     logging.config.dictConfig(LogConfig)
 

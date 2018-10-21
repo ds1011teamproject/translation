@@ -1,4 +1,4 @@
-### Version 0.3.1 - 10/20/2018
+### Version 0.4.0 - 10/21/2018
 Changes:
 - branched the code to 'homework' with the aim of catering to using the ModelManager for the homework
 - added \_\_version\_\_ to ModelManager to track current version
@@ -16,12 +16,13 @@ Changes:
     - can control whether these happen using ModelManager.cparams
     - can save final models after training with a meta_string that is saved to a markdown file
     - changed the set_model method to new_model, can now take a label parameter that determines the subfolder under model_saves that the model saves files (defaults to /scratch)
-    - implemented the training curves on the BaseModel, comes in 2 flavors:
+    - added the training curves on the BaseModel, comes in 2 flavors:
         - 1 curve that is snapped at each model check iteration. A check iteration is each time we check for early stop, which can happen multiple times in each epoch. There is a hyperparameter that controls for this behaviour
         - 1 curve that is snapped at each model epoch
-    - implemented a basic curve grapher: ModelManager.graph_training_curves(), see example output in model_saves/scratch/
+    - added a basic curve grapher: ModelManager.graph_training_curves(), see example output in model_saves/scratch/
     - implemented saving and restarting training, see use_guide.ipynb for details
-    - implemented some other ease-of-use functionality, see use_guide.ipynb 
+    - added the ability to generate a README.MD in the model_save/<model_label>/ folder to automatically document what we were doing with each model
+    - implemented a results collection routine that helps collects results from mulitple model trainings into the ModelManager.results list (which can be turned into a pd.DataFrame by ModelManager.get_results() ) 
     
 
 Comments:

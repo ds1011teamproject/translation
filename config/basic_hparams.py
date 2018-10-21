@@ -7,6 +7,7 @@ import torch
 
 DEFAULT_HPARAMS = {
     HyperParamKey.NUM_EPOCH: 1,
+    HyperParamKey.LR: 0.01,
     HyperParamKey.TRAIN_PLUS_VAL_SIZE: 25000,
     HyperParamKey.TEST_SIZE: 25000,
     HyperParamKey.VAL_SIZE: 5000,

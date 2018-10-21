@@ -7,6 +7,7 @@ class PathKey:
 
 class HyperParamKey:
     TRAIN_PLUS_VAL_SIZE = 'train_plus_val_size'
+    LR = 'lr'
     TEST_SIZE = 'test_size'
     VAL_SIZE = 'val_size'
     NUM_EPOCH = 'num_epochs'
@@ -52,6 +53,15 @@ class StateKey:
 class LoadingKey:
     LOAD_CHECKPOINT = 'checkpoint'
     LOAD_BEST = 'best'
+
+
+class OutputKey:
+    BEST_VAL_ACC = 'best_val_acc'
+    BEST_VAL_LOSS = 'best_val_loss'
+    FINAL_VAL_ACC = 'final_val_acc'
+    FINAL_VAL_LOSS = 'final_val_loss'
+    FINAL_TRAIN_ACC = 'final_train_acc'
+    FINAL_TRAIN_LOSS = 'final_train_loss'
 
 
 # Reference: nltk.corpus.stopwords.fileids()

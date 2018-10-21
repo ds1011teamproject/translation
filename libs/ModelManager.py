@@ -2,6 +2,8 @@
 Responsible for managing the initialization, training, saving and load of model_saves
 """
 import os
+import pandas as pd
+import gc
 from libs.models import registry as mod_reg
 from libs.data_loaders import registry as load_reg
 from libs.models.registry import modelRegister
@@ -44,7 +46,7 @@ class ModelManager:
         self.lparams = None             # the loader will send back a list of parameter required for model init
         self.model = None               # for storing the active model that is being trained
         self.dataloader = None          # currently will be set a default DataLoader used for HW1
-        self.results = None             # pandas dataframe of saved results
+        self.results = []               # list of saved results, can be output to a pandas dataframe w/ get_results
         self.mode = mode                # able to operate in console or notebook mode
         self.tqdm = tqdm                # memory ref to the tqdm handler in the correct mode
         self.change_mode(mode)          # setting the right mode fo the tqdm handler
@@ -97,10 +99,10 @@ class ModelManager:
         os.makedirs(model_path, exist_ok=True)
         logger.info("New Model initialized: /%s, all model output files will be saved here: %s" % (label, model_path))
 
-    def save_model(self, meta_string):
+    def save_model(self, md_string, fn=None):
         """ explicitly saves the active model to the cparams specification """
-        self.model.save()
-        self.model.save_meta(meta_string)
+        self.model.save(fn)
+        self.model.save_meta(md_string)
 
     def load_model(self, which_model=LoadingKey.LOAD_CHECKPOINT, path_to_model_ovrd=None):
         """
@@ -113,6 +115,12 @@ class ModelManager:
     def train(self):
         """ continue to train the current model """
         self.model.train(self.dataloader, self.tqdm)
+        self.results.append(self.model.output_dict)
+
+    def dump_model(self):
+        """ dumps the existing model to clear up memory """
+        self.model = None
+        gc.collect()
 
     def graph_training_curves(self, mode=GRAPH_MODE_TRAINING):
         """
@@ -153,6 +161,10 @@ class ModelManager:
             self.tqdm = tqdm
         else:
             self.tqdm = tqdm_notebook
+
+    def get_results(self):
+        """ outputs the self.results list of collected training results into a dataframe """
+        return pd.DataFrame(self.results)
 
 
 def _update_if_dict(default_dict, overrides):

@@ -8,7 +8,7 @@ Notes:
 
 """
 from abc import ABC, abstractmethod
-from config.constants import HyperParamKey, ControlKey, StateKey, PathKey, LoadingKey
+from config.constants import HyperParamKey, ControlKey, StateKey, PathKey, LoadingKey, OutputKey
 import logging
 import torch
 import time
@@ -47,9 +47,16 @@ class BaseModel(ABC):
             self.VAL_LOSS: [],
         }
 
-        self.epoch_curves = self.iter_curves.copy()     # used for storing the curves by each model epoch
+        # used for storing the curves by each model epoch
+        self.epoch_curves = {
+            self.TRAIN_ACC: [],
+            self.TRAIN_LOSS: [],
+            self.VAL_ACC: [],
+            self.VAL_LOSS: [],
+        }
         self.hparams = hparams                          # passed down from the ModelManager
         self.output_dict = {}                           # key value pair of any results you want to save
+        self._write_params_to_output_dict()
         if not nolog:
             logger.info(self.model_details)
 
@@ -120,6 +127,12 @@ class BaseModel(ABC):
                         if self.cparams[ControlKey.SAVE_BEST_MODEL] and is_best:
                             self.save(fn=self.BEST_FN)
 
+                        # reporting back up to output_dict
+
+                        if is_best:
+                            self.output_dict[OutputKey.BEST_VAL_ACC] = val_acc
+                            self.output_dict[OutputKey.BEST_VAL_LOSS] = val_loss
+
                         if self.hparams[HyperParamKey.CHECK_EARLY_STOP]:
                             early_stop_training = self.check_early_stop()
                         if early_stop_training:
@@ -138,13 +151,29 @@ class BaseModel(ABC):
                 if self.cparams[ControlKey.SAVE_EACH_EPOCH]:
                     self.save()
 
-            logger.info("training completed ...")
+            # final loss reporting
+            val_acc, val_loss = self.eval_model(loader.loaders['val'])
+            train_acc, train_loss = self.eval_model(loader.loaders['train'])
+            self.output_dict[OutputKey.FINAL_TRAIN_ACC] = train_acc
+            self.output_dict[OutputKey.FINAL_TRAIN_LOSS] = train_loss
+            self.output_dict[OutputKey.FINAL_VAL_ACC] = val_acc
+            self.output_dict[OutputKey.FINAL_VAL_LOSS] = val_loss
+            logger.info("training completed, results collected ...")
 
     def save_meta(self, meta_string):
-        """ saves self.meta to a md file """
-        fp = self.cparams[PathKey.MODEL_SAVES] + self.README_FN
+        """ saves self.meta to a md file, appends all parameters"""
+        fp = self.cparams[PathKey.MODEL_PATH] + self.README_FN
         f = open(fp, 'w')
         f.write(meta_string)
+        f.write('\n\nHyperparameters used:')
+        for key in self.hparams.keys():
+            f.write("\n%s - %s" % (key, self.hparams[key]))
+        f.write('\n\nLoader parameters used:')
+        for key in self.lparams.keys():
+            f.write("\n%s - %s" % (key, self.lparams[key]))
+        f.write('\n\nControl parameters used:')
+        for key in self.cparams.keys():
+            f.write("\n%s - %s" % (key, self.cparams[key]))
         f.close()
 
     def save(self, fn=None):
@@ -215,7 +244,7 @@ class BaseModel(ABC):
 
     def _init_optim(self):
         op_constr = self.hparams[HyperParamKey.OPTIMIZER_ENCODER]
-        self.optim = op_constr(self.model.parameters())
+        self.optim = op_constr(self.model.parameters(), lr=self.hparams[HyperParamKey.LR])
 
     def _init_scheduler(self):
         sche_constr = self.hparams[HyperParamKey.SCHEDULER]
@@ -227,6 +256,13 @@ class BaseModel(ABC):
         logger.debug("Saving Model to %s" % (save_path + filename))
         torch.save(state, save_path + filename)
         logger.debug("Saving took %.2f secs" % (time.time() - start_time))
+
+    def _write_params_to_output_dict(self):
+        """ writes hparams, lparams to the output_dict """
+        if isinstance(self.hparams, dict):
+            self.output_dict.update(self.hparams)
+        if isinstance(self.lparams, dict):
+            self.output_dict.update(self.lparams)
 
     @abstractmethod
     def eval_model(self, dataloader):
