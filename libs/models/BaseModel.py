@@ -150,6 +150,8 @@ class BaseModel(ABC):
                 self.epoch_curves[self.VAL_ACC].append(val_acc)
                 if self.cparams[ControlKey.SAVE_EACH_EPOCH]:
                     self.save()
+                if early_stop_training:
+                        break
 
             # final loss reporting
             val_acc, val_loss = self.eval_model(loader.loaders['val'])
