@@ -8,10 +8,10 @@ from abc import ABC, abstractmethod
 
 
 class BaseLoader(ABC):
-    def __init__(self, io_paths, hparams, tqdm):
+    def __init__(self, cparams, hparams, tqdm):
         super().__init__()
         self.tqdm = tqdm            # tqdm handler that depends on console or notebook mode
-        self.io_paths = io_paths    # io_paths passed down from the ModelManager
+        self.cparams = cparams      # cparams passed down from the ModelManager
         self.hparams = hparams      # hparams passed down from the ModelManager
         self.data = {}              # for storing raw data
         self.loaders = {}           # for storing torch DataLoader objects

@@ -24,8 +24,8 @@ UNK_TOKEN, UNK_IDX = '<unk>', 1
 
 
 class ImdbLoader(BaseLoader):
-    def __init__(self, io_paths, hparams, tqdm):
-        super().__init__(io_paths, hparams, tqdm)
+    def __init__(self, cparams, hparams, tqdm):
+        super().__init__(cparams, hparams, tqdm)
         pass
 
     def load(self):
@@ -35,10 +35,10 @@ class ImdbLoader(BaseLoader):
 
     def _load_raw_data(self):
         # just gets the data, doesn't implement pickling
-        train_and_val_set = construct_dataset(self.io_paths[PathKey.DATA_PATH] + 'train/'
+        train_and_val_set = construct_dataset(self.cparams[PathKey.DATA_PATH] + 'train/'
                                               , self.hparams[HyperParamKey.TRAIN_PLUS_VAL_SIZE])
 
-        test_set = construct_dataset(self.io_paths[PathKey.DATA_PATH] + 'test/'
+        test_set = construct_dataset(self.cparams[PathKey.DATA_PATH] + 'test/'
                                      , self.hparams[HyperParamKey.TEST_SIZE])
 
         logger.info("extracting ngrams from train/val set...")
