@@ -28,19 +28,18 @@ data_path = args.data_path if getattr(args, 'data_path') else None
 config_path = args.config_path if getattr(args, 'config_path') else None
 
 # update parameters to override
-paths_new = dict()
+config_update = dict()
 if data_path:
-    paths_new[PathKey.TEST_PATH] = os.path.join(data_path, 'aclImdb/test/')
-    paths_new[PathKey.TRAIN_PATH] = os.path.join(data_path, 'aclImdb/train/')
-logger.info("Paths to override: {}".format(paths_new))
-
-# todo: user input config file format TBD
+    config_update[PathKey.DATA_PATH] = data_path
+    # paths_new[PathKey.TEST_PATH] = os.path.join(data_path, 'aclImdb/test/')
+    # paths_new[PathKey.TRAIN_PATH] = os.path.join(data_path, 'aclImdb/train/')
+logger.info("Parameters to override: {}".format(config_update))
 
 # List implemented models
 logger.info("Implemented models: {}".format(mm.modelRegister.model_list))
 
 # todo --- MAIN HERE ---
-mgr = mm.ModelManager(hparams=None, control_overrides=paths_new)
+mgr = mm.ModelManager(hparams=None, control_overrides=config_update)
 mgr.load_data(mm.loaderRegister.IMDB)
 mgr.new_model(mm.modelRegister.BagOfWords)
 mgr.train()

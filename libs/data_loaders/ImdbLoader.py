@@ -35,10 +35,10 @@ class ImdbLoader(BaseLoader):
 
     def _load_raw_data(self):
         # just gets the data, doesn't implement pickling
-        train_and_val_set = construct_dataset(self.io_paths[PathKey.TRAIN_PATH]
+        train_and_val_set = construct_dataset(self.io_paths[PathKey.DATA_PATH] + 'train/'
                                               , self.hparams[HyperParamKey.TRAIN_PLUS_VAL_SIZE])
 
-        test_set = construct_dataset(self.io_paths[PathKey.TEST_PATH]
+        test_set = construct_dataset(self.io_paths[PathKey.DATA_PATH] + 'test/'
                                      , self.hparams[HyperParamKey.TEST_SIZE])
 
         logger.info("extracting ngrams from train/val set...")
