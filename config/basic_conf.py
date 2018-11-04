@@ -12,6 +12,8 @@ DEFAULT_CONTROLS = {
     PathKey.DATA_PATH: 'data/aclImdb/',
     # PathKey.TEST_PATH: 'data/aclImdb/test/',
     # PathKey.TRAIN_PATH: 'data/aclImdb/train/',
+    PathKey.INPUT_LANG: 'vi',
+    PathKey.OUTPUT_LANG: 'en',
     PathKey.MODEL_SAVES: 'model_saves/'
 }
 
@@ -19,7 +21,7 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 LOG_LEVEL_DEFAULT = getattr(logging, LogConfig['handlers']['default']['level'])
 
 
-def init_logger(logfile, loglevel=LOG_LEVEL_DEFAULT):
+def init_logger(loglevel=LOG_LEVEL_DEFAULT, logfile=None):
     logging.getLogger('__main__').setLevel(loglevel)
     if logfile is None:
         LogConfig['loggers']['']['handlers'] = ['console']
