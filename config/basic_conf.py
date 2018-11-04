@@ -18,7 +18,7 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 LOG_LEVEL_DEFAULT = getattr(logging, LogConfig['handlers']['default']['level'])
 
 
-def init_logger(loglevel=LOG_LEVEL_DEFAULT, logfile='mt.log'):
+def init_logger(logfile, loglevel=LOG_LEVEL_DEFAULT):
     logging.getLogger('__main__').setLevel(loglevel)
     if logfile is None:
         LogConfig['loggers']['']['handlers'] = ['console']
