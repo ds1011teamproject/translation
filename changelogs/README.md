@@ -1,3 +1,16 @@
+### Version 0.5.0 - 11/04/2018
+Changes:
+- update constants (data_path)
+- update basic_config (input/output_lang for translation task)
+- minor bug fix in logger initialization
+- update main_nb.ipynb for project data loader demo
+- add IWSLT data loader file [current]: 
+    - main: load raw text to Datum list for train/val/test set
+    - save (token2id, id2token, vocab_words) per language + vocab_size
+    - add <EOS> at end of sentence
+    - simple split and remove "\n", lower first letter in the sentence
+    
+
 ### Version 0.4.0 - 10/21/2018
 Changes:
 - branched the code to 'homework' with the aim of catering to using the ModelManager for the homework
