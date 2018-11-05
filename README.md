@@ -5,14 +5,6 @@ Team project for [Natural Language Processing with Representation Learning
 
 ## Data
 
-[[website] ACL 2014 NINTH WORKSHOP ON STATISTICAL MACHINE TRANSLATION](http://www.statmt.org/wmt14/index.html)
-
-[[website] Shared Task: Machine Translation](http://www.statmt.org/wmt14/translation-task.html)
-
-[[download] Europarl v7](http://www.statmt.org/wmt13/training-parallel-europarl-v7.tgz)
-
-[[download] Common Crawl corpus](http://www.statmt.org/wmt13/training-parallel-commoncrawl.tgz)
-
 
 ### * Project Data
 Vietnum-English and Chinese-English parallel corpus provided by the instructors. 

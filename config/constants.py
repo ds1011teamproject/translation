@@ -1,6 +1,5 @@
 class PathKey:
-    DATA_PATH_VI = 'data_path_vi'
-    DATA_PATH_ZH = 'data_path_zh'
+    DATA_PATH = 'data_path'
     INPUT_LANG = 'input_lang'
     OUTPUT_LANG = 'output_lang'
     MODEL_SAVES = 'model_saves'
