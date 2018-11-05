@@ -1,7 +1,6 @@
 class PathKey:
-    # TEST_PATH = 'test_path'
-    # TRAIN_PATH = 'train_path'
-    DATA_PATH = 'data_path'
+    DATA_PATH_VI = 'data_path_vi'
+    DATA_PATH_ZH = 'data_path_zh'
     INPUT_LANG = 'input_lang'
     OUTPUT_LANG = 'output_lang'
     MODEL_SAVES = 'model_saves'
