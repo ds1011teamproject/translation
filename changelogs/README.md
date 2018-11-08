@@ -1,3 +1,21 @@
+### Version 0.6.0 - 11/08/2018
+Changes:
+- update constants and keys
+    - seperate some hyperparameters for encoder and decoder
+    - config requires specific num_layers and num_directions
+    - support L2 regularization for optimizers
+- add scratch GRU encoder/decoder
+- refactor the base model hierarchy:
+    - BaseModel: the very foundation for all deep models, provides interface/handlers to ModelManager
+    - ClassifierModel: base model for classification task, inherits BaseModel, provides specific train/save/load methods
+    - TranslatorModel: base model for machine translation task, inherits BaseModel, similar functionality as ClassifierModel
+    - *Please implement your model for translation task inheriting TranslationModel.
+    
+### Version 0.5.1 - 11/04/2018
+Changes:
+- support minibatch training for translation task
+- optimize data loading and pre-processing  
+
 ### Version 0.5.0 - 11/04/2018
 Changes:
 - update constants (data_path)
