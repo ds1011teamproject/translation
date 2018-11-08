@@ -7,22 +7,26 @@ class PathKey:
 
 
 class HyperParamKey:
-    TRAIN_PLUS_VAL_SIZE = 'train_plus_val_size'
-    LR = 'lr'
-    TEST_SIZE = 'test_size'
-    VAL_SIZE = 'val_size'
-    NUM_EPOCH = 'num_epochs'
-    EMBEDDING_DIM = 'embedding_dim'
-    NGRAM_SIZE = 'ngram_size'
-    REMOVE_PUNC = 'remove_punc'
-    BATCH_SIZE = 'batch_size'
+    # vocabulary parameters
     VOC_SIZE = 'voc_size'
+    REMOVE_PUNC = 'remove_punc'
+    # model parameters
+    EMBEDDING_DIM = 'embedding_dim'
+    HIDDEN_SIZE = 'hidden_size'
+    NUM_LAYERS = 'num_layers'
+    NUM_DIRECTIONS = 'num_dirs'
+    DROPOUT_PROB = 'dropout_prob'
+    # train related
+    BATCH_SIZE = 'batch_size'
+    NUM_EPOCH = 'num_epochs'
     TRAIN_LOOP_EVAL_FREQ = 'train_loop_check_freq'
     CHECK_EARLY_STOP = 'check_early_stop'
     EARLY_STOP_LOOK_BACK = 'es_look_back'
     EARLY_STOP_REQ_PROG = 'es_req_prog'
     OPTIMIZER_ENCODER = 'optim_enc'
     OPTIMIZER_DECODER = 'optim_dec'
+    WEIGHT_DECAY = 'weight_decay'
+    LR = 'lr'
     SCHEDULER = 'scheduler'
     SCHEDULER_GAMMA = 'scheduler_gamma'
     CRITERION = 'criterion'
