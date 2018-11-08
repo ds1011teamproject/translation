@@ -1,12 +1,14 @@
 """
 DataLoader for IWSLT data set.
+
+**NOTE**: the collate function automatically sorts by length of the source sentence!
 """
-import os
 import logging
 import numpy as np
 from torch.utils.data import DataLoader, Dataset
 from collections import Counter
 import pickle as pkl
+import torch
 
 from libs.data_loaders.BaseLoader import BaseLoader
 from config.constants import (HyperParamKey as hparamKey, PathKey,
@@ -19,12 +21,14 @@ logger = logging.getLogger('__main__')
 ##################
 # IWSLT specific #
 ##################
-SOS_TOKEN, SOS_IDX = '<SOS>', 0
-EOS_TOKEN, EOS_IDX = '<EOS>', 1
-UNK_TOKEN, UNK_IDX = '<UNK>', 2
+PAD_TOKEN, PAD_IDX = '<PAD>', 0
+UNK_TOKEN, UNK_IDX = '<UNK>', 1
+SOS_TOKEN, SOS_IDX = '<SOS>', 2
+EOS_TOKEN, EOS_IDX = '<EOS>', 3
 
 SRC = 'source'
 TAR = 'target'
+
 
 class Language:
     VIET = 'vi'
@@ -60,10 +64,11 @@ class IwsltLoader(BaseLoader):
         Convert raw text from file into train/val/test data sets.
         """
         logger.info("Get source language datum list...")
-        self.data[SRC] = load_datum_list(data_path=self.cparams[PathKey.DATA_PATH],
+        data_path = self.cparams[PathKey.DATA_PATH] + 'iwslt-%s-en/' % self.cparams[PathKey.INPUT_LANG]
+        self.data[SRC] = load_datum_list(data_path=data_path,
                                          lang=self.cparams[PathKey.INPUT_LANG])
         logger.info("Get target language datum list...")
-        self.data[TAR] = load_datum_list(data_path=self.cparams[PathKey.DATA_PATH],
+        self.data[TAR] = load_datum_list(data_path=data_path,
                                          lang=self.cparams[PathKey.OUTPUT_LANG])
         # get language vocabulary
         svocab_file = 'data/{}_voc{}.p'.format(self.cparams[PathKey.INPUT_LANG],
@@ -76,12 +81,16 @@ class IwsltLoader(BaseLoader):
             logger.info("Vocabulary found and loaded! (token2id, id2token, vocabs)")
         except IOError:
             # build vocabulary
-            svocab = get_vocabulary(self.data[SRC][0], vocab_size=self.hparams[hparamKey.VOC_SIZE])
-            tvocab = get_vocabulary(self.data[TAR][0], vocab_size=self.hparams[hparamKey.VOC_SIZE])
+            logger.info("Building Vocabulary from raw files ... building source vocab")
+            svocab = get_vocabulary(self.data[SRC][DataSplitType.TRAIN], self.hparams[hparamKey.VOC_SIZE])
+
+            logger.info("Building target vocab")
+            tvocab = get_vocabulary(self.data[TAR][DataSplitType.TRAIN], self.hparams[hparamKey.VOC_SIZE])
             # save to file
             pkl.dump(svocab, open(svocab_file, 'wb'))
             pkl.dump(tvocab, open(tvocab_file, 'wb'))
             logger.info("Generated token2id, id2token for both src/target languages!")
+
         # keep token2id, id2token in memory
         self.token2id[SRC] = svocab['token2id']
         self.token2id[TAR] = tvocab['token2id']
@@ -96,14 +105,70 @@ class IwsltLoader(BaseLoader):
 
     def _update_datum_indices(self, indexer, mode=SRC):
         datum_sets = self.data[SRC] if mode == SRC else self.data[TAR]
-        for datum_set in datum_sets:  # train, val, test sets
-            for datum in datum_set:
+        for split in datum_sets:  # train, val, test
+            for datum in datum_sets[split]:
                 datum.set_token_indices(
                     [indexer[tok] if tok in indexer else UNK_IDX for tok in datum.tokens] + [EOS_IDX]
                 )  # add EOS at the end of the sentence
 
     def _data_to_pipe(self):
-        pass
+        """
+        coverts the data objects to the torch.*.DataLoader pipes
+        """
+        logger.info("Loading raw data into the DataLoaders ...")
+        shuffle_dict = {DataSplitType.TRAIN: True, DataSplitType.VAL: False, DataSplitType.TEST: False}
+        assert self.data[SRC].keys() == self.data[TAR].keys(), \
+            "Source and Target data do not have the same keys! cannot construct DataLoaders"
+        for split in self.data[SRC].keys():  # train, val, test
+            cur_ds = IWSLTDataset(self.data[SRC][split], self.data[TAR][split])
+            self.loaders[split] = DataLoader(dataset=cur_ds,
+                                             batch_size=self.hparams[hparamKey.BATCH_SIZE],
+                                             collate_fn=iwslt_collate_func,
+                                             shuffle=shuffle_dict[split])
+
+
+def iwslt_collate_func(batch):
+    """
+    **NOTE**: the batch is automatically sorted by length of the source sentence!
+    """
+    s_list, t_list = [], []  # source list and target list of token indices
+    s_len_list, t_len_list = [], []  # source and target list of lengths
+    for datum in batch:
+        s_len_list.append(datum[2])
+        t_len_list.append(datum[3])
+
+    max_length1 = np.max(s_len_list)
+    max_length2 = np.max(t_len_list)
+
+    # padding
+    for datum in batch:
+        padded_vec1 = np.pad(np.array(datum[0]),
+                             pad_width=(0, max_length1 - datum[2]),
+                             mode="constant", constant_values=0)
+        s_list.append(padded_vec1)
+
+        padded_vec2 = np.pad(np.array(datum[1]),
+                             pad_width=(0, max_length2 - datum[3]),
+                             mode="constant", constant_values=0)
+        t_list.append(padded_vec2)
+
+    n1 = np.array(s_list).astype(int)
+    n2 = np.array(t_list).astype(int)
+
+    t_sent1 = torch.from_numpy(n1).to(DEVICE)
+    t_sent2 = torch.from_numpy(n2).to(DEVICE)
+    t_len1 = torch.LongTensor(s_len_list).to(DEVICE)
+    t_len2 = torch.LongTensor(t_len_list).to(DEVICE)
+
+    # sorting by descending len1
+    sorted_t_len1, idx_sort = torch.sort(t_len1, dim=0, descending=True)
+
+    return [
+        torch.index_select(t_sent1, 0, idx_sort),
+        torch.index_select(t_sent2, 0, idx_sort),
+        sorted_t_len1,
+        torch.index_select(t_len2, 0, idx_sort),
+    ]
 
 
 class IWSLTDatum:
@@ -119,17 +184,24 @@ class IWSLTDatum:
         self.token_indices = indices
 
 
-# todo: pytorch Dataset for IWSLT data
 class IWSLTDataset(Dataset):
-    def __init__(self, data_list):
-        self.data_list = data_list
+    def __init__(self, source_list, target_list):
+        assert len(source_list) == len(target_list), \
+            "Length of source and target is not the same! Cannot construct Dataset object"
+        self.s_list = source_list
+        self.t_list = target_list
 
     def __len__(self):
-        return len(self.data_list)
+        return len(self.s_list)  # already asserted that the 2 lengths are the same (source/target)
 
     def __getitem__(self, idx):
-        """Get indices vector for i-th IWSLT Datum"""
-        return self.data_list[idx].token_indices
+        """Get indices vector for i-th IWSLT Datum
+        order is (source, target, source len, target len)
+        """
+        return [self.s_list[idx].token_indices,
+                self.t_list[idx].token_indices,
+                len(self.s_list[idx].token_indices),
+                len(self.t_list[idx].token_indices)]
 
 
 ##################
@@ -163,27 +235,24 @@ def raw_to_datumlist(data_path, language, data_split_type):
 
 
 def load_datum_list(data_path, lang):
-    return (raw_to_datumlist(data_path, lang, DataSplitType.TRAIN),
-            raw_to_datumlist(data_path, lang, DataSplitType.VAL),
-            raw_to_datumlist(data_path, lang, DataSplitType.TEST))
+    return {DataSplitType.TRAIN: raw_to_datumlist(data_path, lang, DataSplitType.TRAIN),
+            DataSplitType.VAL: raw_to_datumlist(data_path, lang, DataSplitType.VAL),
+            DataSplitType.TEST: raw_to_datumlist(data_path, lang, DataSplitType.TEST)}
 
 
 def get_vocabulary(datum_list, vocab_size):
     """
     Generate token2id, id2token, vocabulary
     """
-    vocab = [SOS_TOKEN, EOS_TOKEN, UNK_TOKEN]
+    vocab = [PAD_TOKEN, UNK_TOKEN, SOS_TOKEN, EOS_TOKEN]
+    token2id = {}
+
     word_counter = Counter()
     for datum in datum_list:
         word_counter.update(Counter(datum.tokens))
     vocab += [d[0] for d in word_counter.most_common(vocab_size)]
-    token2id = dict([(tok, vocab.index(tok)) for tok in vocab])
-    id2token = dict([(vocab.index(tok), tok) for tok in vocab])
+    for i, word in enumerate(vocab):
+        token2id[word] = i
     return {'token2id': token2id,
-            'id2token': id2token,
-            'vocab': vocab}
+            'id2token': vocab}
 
-
-# todo: collate function for IWSLTDataset
-def iwslt_collate_func(batch):
-    pass

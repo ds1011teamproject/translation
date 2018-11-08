@@ -9,10 +9,8 @@ from config.constants import PathKey, LogConfig, ControlKey
 DEFAULT_CONTROLS = {
     ControlKey.SAVE_BEST_MODEL: True,
     ControlKey.SAVE_EACH_EPOCH: True,
-    PathKey.DATA_PATH: 'data/aclImdb/',
-    # PathKey.TEST_PATH: 'data/aclImdb/test/',
-    # PathKey.TRAIN_PATH: 'data/aclImdb/train/',
-    PathKey.INPUT_LANG: 'vi',
+    PathKey.INPUT_LANG: 'zh',
+    PathKey.DATA_PATH: 'data/',
     PathKey.OUTPUT_LANG: 'en',
     PathKey.MODEL_SAVES: 'model_saves/'
 }
