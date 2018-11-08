@@ -178,7 +178,7 @@ class BaseModel(ABC):
             f.write("\n%s - %s" % (key, self.cparams[key]))
         f.close()
 
-    def save(self, fn=None):
+    def save(self, fn=CHECKPOINT_FN):
         """
         saves the full structure for future loading
         """
@@ -195,10 +195,7 @@ class BaseModel(ABC):
             StateKey.LABEL:         self.label
         }
 
-        if fn is None:
-            self._save_checkpoint(state)
-        else:
-            self._save_checkpoint(state, fn)
+        self._save_checkpoint(state, fn)
 
     def load(self, which_model=LoadingKey.LOAD_CHECKPOINT, path_to_model_ovrd=None):
         """
@@ -245,14 +242,14 @@ class BaseModel(ABC):
         self._init_scheduler()
 
     def _init_optim(self):
-        op_constr = self.hparams[HyperParamKey.OPTIMIZER_ENCODER]
-        self.optim = op_constr(self.model.parameters(), lr=self.hparams[HyperParamKey.LR])
+        op_constr = self.hparams[HyperParamKey.OPTIMIZER]
+        self.optim = op_constr(self.model.parameters(), lr=self.hparams[HyperParamKey.ENC_LR])
 
     def _init_scheduler(self):
         sche_constr = self.hparams[HyperParamKey.SCHEDULER]
         self.scheduler = sche_constr(self.optim, gamma=self.hparams[HyperParamKey.SCHEDULER_GAMMA])
 
-    def _save_checkpoint(self, state, filename=CHECKPOINT_FN):
+    def _save_checkpoint(self, state, filename):
         start_time = time.time()
         save_path = self.cparams[PathKey.MODEL_PATH]
         logger.debug("Saving Model to %s" % (save_path + filename))
