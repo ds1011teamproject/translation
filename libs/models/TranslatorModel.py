@@ -114,7 +114,7 @@ class MTBaseModel(BaseModel):
     def _init_scheduler(self):
         sche_constr = self.hparams[HyperParamKey.SCHEDULER]
         self.enc_scheduler = sche_constr(self.enc_optim, gamma=self.hparams[HyperParamKey.SCHEDULER_GAMMA])
-        self.dec_scheduler = sche_constr(self.dec_scheduler, gamma=self.hparams[HyperParamKey.SCHEDULER_GAMMA])
+        self.dec_scheduler = sche_constr(self.dec_optim, gamma=self.hparams[HyperParamKey.SCHEDULER_GAMMA])
 
     ################################
     # Override following if needed #

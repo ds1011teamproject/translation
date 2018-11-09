@@ -16,7 +16,7 @@ DEFAULT_HPARAMS = {
     HyperParamKey.DEC_NUM_LAYERS: 1,
     HyperParamKey.DEC_NUM_DIRECTIONS: 1,
     # train
-    HyperParamKey.TEACHER_FORCING: True,
+    HyperParamKey.TEACHER_FORCING_RATIO: 0.5,
     HyperParamKey.NUM_EPOCH: 1,
     HyperParamKey.ENC_LR: 0.01,
     HyperParamKey.DEC_LR: 0.01,
