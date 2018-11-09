@@ -5,13 +5,14 @@ import logging
 import random
 import torch
 import torch.nn.functional as F
+import numpy as np
 
 from libs.models.TranslatorModel import MTBaseModel
 from libs.models.modules import GRU
 import libs.data_loaders.IwsltLoader as iwslt
 from libs.data_loaders.IwsltLoader import SRC, TAR, DataSplitType
 from config.constants import (HyperParamKey as hparamKey, LoaderParamKey as loaderKey,
-                              PathKey, StateKey, LoadingKey, OutputKey)
+                              PathKey, StateKey, LoadingKey, ControlKey, OutputKey)
 from config.basic_conf import DEVICE
 
 logger = logging.getLogger('__main__')
@@ -27,13 +28,13 @@ class RNN_GRU(MTBaseModel):
                                    hidden_size=self.hparams[hparamKey.HIDDEN_SIZE],
                                    num_layers=self.hparams[hparamKey.ENC_NUM_LAYERS],
                                    num_directions=self.hparams[hparamKey.ENC_NUM_DIRECTIONS],
-                                   dropout_prob=self.hparams.get(hparamKey.ENC_DROPOUT, 0.0))
+                                   dropout_prob=self.hparams.get(hparamKey.ENC_DROPOUT, 0.0)).to(DEVICE)
         self.decoder = GRU.Decoder(vocab_size=self.lparams[loaderKey.ACT_VOCAB_SIZE][TAR],  # target language vocab size
                                    emb_size=self.hparams[hparamKey.EMBEDDING_DIM],
                                    hidden_size=self.hparams[hparamKey.HIDDEN_SIZE],
                                    num_layers=self.hparams[hparamKey.DEC_NUM_LAYERS],
                                    num_directions=self.hparams[hparamKey.DEC_NUM_DIRECTIONS],
-                                   dropout_prob=self.hparams.get(hparamKey.DEC_DROPOUT, 0.0))
+                                   dropout_prob=self.hparams.get(hparamKey.DEC_DROPOUT, 0.0)).to(DEVICE)
 
     def eval_model(self, dataloader):
         pass
@@ -61,6 +62,7 @@ class RNN_GRU(MTBaseModel):
             # todo: set criterion in hyper-parameter config
             criterion = self.hparams[hparamKey.CRITERION]()
             early_stop = False
+            best_loss = np.Inf
 
             # epoch train
             for epoch in tqdm_handler(range(self.hparams[hparamKey.NUM_EPOCH] - self.cur_epoch)):
@@ -72,8 +74,10 @@ class RNN_GRU(MTBaseModel):
                 logger.info("stepped scheduler to epoch = {}".format(self.enc_scheduler.last_epoch + 1))
 
                 # mini-batch train
+                num_batch_trained = 0
                 for i, (src, tgt, src_lens, tgt_lens) in enumerate(loader.loaders[DataSplitType.TRAIN]):
                     batch_loss = 0
+                    num_batch_trained = i
                     # tune to train mode
                     self.encoder.train()
                     self.decoder.train()
@@ -102,7 +106,7 @@ class RNN_GRU(MTBaseModel):
                     self.dec_optim.step()
                     # update epoch_loss
                     epoch_loss += batch_loss.item()
-
+                    # report and check early-stop
                     if i % self.hparams[hparamKey.TRAIN_LOOP_EVAL_FREQ] == 0:
                         # report
                         logger.info("(epoch){}/{} (step){}/{} (loss){} (lr)e:{}/d:{}".format(
@@ -115,17 +119,26 @@ class RNN_GRU(MTBaseModel):
                         # todo: how to measure validation loss?
                         # todo: eval_randomly
                         # todo: save_best and save_epoch
+                        # save if best
+                        if batch_loss.item() < best_loss:
+                            # todo: if eval on validation set, update output_dict
+                            if self.cparams[ControlKey.SAVE_BEST_MODEL]:
+                                self.save(fn=self.BEST_FN)
+                            best_loss = batch_loss.item()
+                        # check early-stop
                         if self.hparams[hparamKey.CHECK_EARLY_STOP]:
                             early_stop = self.check_early_stop()
                         if early_stop:
                             logger.info('--- stopping training due to early stop ---')
                             break
                 # normalize epoch loss
-                epoch_loss /= len(loader.loaders[DataSplitType.TRAIN])
+                epoch_loss /= num_batch_trained  # not len(loader.loaders[TRAIN]) for early-stop
+                # todo: eval on corpus (per epoch)
                 self.epoch_curves[self.TRAIN_LOSS].append(epoch_loss)
+                if self.cparams[ControlKey.SAVE_EACH_EPOCH]:
+                    self.save()
                 if early_stop:  # nested loop
                     break
-
-                # todo: eval on corpus (per epoch)
+            # todo: final loss evaluate:
             self.output_dict[OutputKey.FINAL_TRAIN_LOSS] = epoch_loss
             logger.info("training completed, results collected...")
