@@ -4,12 +4,16 @@ Changes:
     - seperate some hyperparameters for encoder and decoder
     - config requires specific num_layers and num_directions
     - support L2 regularization for optimizers
-- add scratch GRU encoder/decoder
 - refactor the base model hierarchy:
     - BaseModel: the very foundation for all deep models, provides interface/handlers to ModelManager
     - ClassifierModel: base model for classification task, inherits BaseModel, provides specific train/save/load methods
     - TranslatorModel: base model for machine translation task, inherits BaseModel, similar functionality as ClassifierModel
     - *Please implement your model for translation task inheriting TranslationModel.
+- implement GRU model (vanilla version)
+    - encoder/decoder structure
+    - train loop, support mini-batch
+    - check_early_stop on train loss history
+    - add demo notebook for this model: `demo_RNN_GRU.ipynb`
     
 ### Version 0.5.1 - 11/04/2018
 Changes:

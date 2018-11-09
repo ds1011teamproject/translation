@@ -1,7 +1,9 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from libs.data_loaders.IwsltLoader import PAD_IDX
+from config.basic_conf import DEVICE
 
 
 class Encoder(nn.Module):
@@ -25,15 +27,17 @@ class Encoder(nn.Module):
             bidirectional=(True if num_directions == 2 else False)
         )
 
+    def init_hidden(self, batch_size):
+        return torch.zeros((self.num_layers * self.num_directions, batch_size,
+                            self.hidden_size // self.num_directions), device=DEVICE)
+
     def forward(self, enc_input, lengths):
         # init hidden
-        hidden = enc_input.new_zeros(self.num_layers * self.num_directions,
-                                     enc_input.size()[0],  # batch_size
-                                     self.hidden_size)
+        hidden = self.init_hidden(enc_input.size()[0])
         # embedding
         embedded = self.embed(enc_input)
         # rnn
-        embedded = nn.utils.rnn.pack_padded_sequence(embedded, lengths.numpy(), batch_first=True)
+        embedded = nn.utils.rnn.pack_padded_sequence(embedded, lengths, batch_first=True)
         output, hidden = self.gru(embedded, hidden)
         # we don't need the output vectors thus no 'pad_packed_sequence'
         return hidden
@@ -62,18 +66,13 @@ class Decoder(nn.Module):
         self.out = nn.Linear(hidden_size, vocab_size)
         self.softmax = nn.LogSoftmax(dim=1)
 
-    def forward(self, dec_in, enc_out, dec_in_lens):
-        # init hidden
-        hidden = dec_in.new_zeros(self.num_layers * self.num_directions,
-                                  dec_in.size()[0],
-                                  self.hidden_size)
+    def forward(self, dec_in, hidden):
         # embedding
         embedded = self.embed(dec_in)
+        # todo: do we need a ReLU like lab8?
+        # embedded = F.relu(embedded)
         # rnn
-        embedded = nn.utils.rnn.pack_padded_sequence(embedded, dec_in_lens.numpy(), batch_first=True)
         output, hidden = self.gru(embedded, hidden)
-        # print("after GRU:", output.size())
-        output = self.out(output[0])
-        # print("after linear:", output.size())
+        output = self.out(output).squeeze(1)
         output = self.softmax(output)   # logits
-        return output, hidden
+        return output

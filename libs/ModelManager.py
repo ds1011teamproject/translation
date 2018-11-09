@@ -97,7 +97,7 @@ class ModelManager:
 
         # make the directory for model saves:
         os.makedirs(model_path, exist_ok=True)
-        logger.info("New Model initialized: /%s, all model output files will be saved here: %s" % (label, model_path))
+        logger.info("New Model initialized: %s, all model output files will be saved here: %s" % (label, model_path))
 
     def save_model(self, md_string, fn=None):
         """ explicitly saves the active model to the cparams specification """
