@@ -1,3 +1,11 @@
+### Version 0.6.1 - 11/09/2018
+Changes:
+- update RNN_GRU train loop
+    - add eval_randomly: translate a randomly selected sentence from given data loader
+    - add compute loss: compute NLLloss on the entire data set (train/val) per report interval
+       - time-consuming that slows down training, either use large report interval, or do this computation per epoch
+    - update corresponding output dict etc.
+    
 ### Version 0.6.0 - 11/08/2018
 Changes:
 - update constants and keys

@@ -39,9 +39,56 @@ class RNN_GRU(MTBaseModel):
     def eval_model(self, dataloader):
         pass
 
-    def eval_randomly(self, dataloader, num=1):
-        """Randomly translate n sentence(s) from the given dataloader"""
-        pass
+    def compute_loss(self, loader):
+        """
+        This computation is very time-consuming, slows down the training.
+        (?) Solution: a) use large check_interval (current)
+                      b) compute the loss on train/val loader only per epoch
+        """
+        self.encoder.eval()
+        self.decoder.eval()
+        loss = 0
+        for i, (src, tgt, slen, tlen) in enumerate(loader):
+            batch_loss = 0
+            batch_size = src.size()[0]
+            # encoding
+            enc_last_hidden = self.encoder(src, slen)
+            # decoding
+            dec_in = torch.LongTensor([iwslt.SOS_IDX] * batch_size).unsqueeze(1).to(DEVICE)
+            for t in range(tgt.size(1)):  # seq_len axis
+                dec_out = self.decoder(dec_in, enc_last_hidden)
+                batch_loss += F.nll_loss(dec_out, tgt[:, t], reduction='sum',
+                                         ignore_index=iwslt.PAD_IDX)
+                topv, topi = dec_out.topk(1)
+                dec_in = topi.detach()
+            batch_loss /= tgt.data.gt(0).sum().float()
+            loss += batch_loss.item()
+        # normalize
+        loss /= len(loader)
+        return loss
+
+    def eval_randomly(self, loader, id2token):
+        """Randomly translate a sentence from the given data loader"""
+        src, tgt, slen, _ = next(iter(loader))
+        idx = random.choice(range(len(src)))
+        src = src[idx].unsqueeze(0)
+        tgt = tgt[idx].unsqueeze(0)
+        slen = slen[idx].unsqueeze(0)
+        self.encoder.eval()
+        self.decoder.eval()
+        enc_hidden = self.encoder(src, slen)
+        predicted = []
+        dec_in = torch.LongTensor([iwslt.SOS_IDX]).unsqueeze(1).to(DEVICE)
+        for t in range(tgt.size(1)):
+            dec_out = self.decoder(dec_in, enc_hidden)
+            topv, topi = dec_out.topk(1)
+            dec_in = topi.detach()
+            predicted.append(dec_in)
+            if dec_in.item() == iwslt.EOS_IDX:
+                break
+        target = " ".join([id2token[e.item()] for e in tgt.squeeze() if e.item() != iwslt.PAD_IDX])
+        translated = " ".join([id2token[e.item()] for e in predicted])
+        logger.info("Translate randomly selected sentence:\nTruth:{}\nPredicted:{}".format(target, translated))
 
     def check_early_stop(self):
         lookback = self.hparams[hparamKey.EARLY_STOP_LOOK_BACK]
@@ -66,7 +113,7 @@ class RNN_GRU(MTBaseModel):
 
             # epoch train
             for epoch in tqdm_handler(range(self.hparams[hparamKey.NUM_EPOCH] - self.cur_epoch)):
-                epoch_loss = 0
+                # epoch_loss = 0
                 # lr_scheduler step
                 self.enc_scheduler.step(epoch=self.cur_epoch)
                 self.dec_scheduler.step(epoch=self.cur_epoch)
@@ -74,7 +121,7 @@ class RNN_GRU(MTBaseModel):
                 logger.info("stepped scheduler to epoch = {}".format(self.enc_scheduler.last_epoch + 1))
 
                 # mini-batch train
-                num_batch_trained = 0
+                # num_batch_trained = 0
                 for i, (src, tgt, src_lens, tgt_lens) in enumerate(loader.loaders[DataSplitType.TRAIN]):
                     batch_loss = 0
                     num_batch_trained = i
@@ -105,40 +152,52 @@ class RNN_GRU(MTBaseModel):
                     self.enc_optim.step()
                     self.dec_optim.step()
                     # update epoch_loss
-                    epoch_loss += batch_loss.item()
+                    # epoch_loss += batch_loss.item()
                     # report and check early-stop
                     if i % self.hparams[hparamKey.TRAIN_LOOP_EVAL_FREQ] == 0:
-                        # report
-                        logger.info("(epoch){}/{} (step){}/{} (loss){} (lr)e:{}/d:{}".format(
+                        # a) compute losses
+                        train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN])
+                        val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL])
+                        # b) report
+                        logger.info("(epoch){}/{} (step){}/{} (trainLoss){} (valLoss){} (lr)e:{}/d:{}".format(
                             self.cur_epoch, self.hparams[hparamKey.NUM_EPOCH],
                             i + 1, len(loader.loaders[DataSplitType.TRAIN]),
-                            batch_loss.item(),
+                            train_loss, val_loss,
                             self.enc_optim.param_groups[0]['lr'], self.dec_optim.param_groups[0]['lr']))
-                        # record current batch_loss
-                        self.iter_curves[self.TRAIN_LOSS].append(batch_loss)
-                        # todo: how to measure validation loss?
-                        # todo: eval_randomly
-                        # todo: save_best and save_epoch
-                        # save if best
-                        if batch_loss.item() < best_loss:
-                            # todo: if eval on validation set, update output_dict
+                        # todo: eval randomly
+                        self.eval_randomly(loader.loaders[DataSplitType.TRAIN], loader.id2token[iwslt.TAR])
+                        # c) record current batch_loss
+                        self.iter_curves[self.TRAIN_LOSS].append(train_loss)
+                        self.iter_curves[self.VAL_LOSS].append(val_loss)
+                        # d) save if best
+                        if val_loss < best_loss:
+                            # update output_dict
+                            self.output_dict[OutputKey.BEST_VAL_LOSS] = val_loss
                             if self.cparams[ControlKey.SAVE_BEST_MODEL]:
                                 self.save(fn=self.BEST_FN)
-                            best_loss = batch_loss.item()
-                        # check early-stop
+                            best_loss = val_loss
+                        # e) check early-stop
                         if self.hparams[hparamKey.CHECK_EARLY_STOP]:
                             early_stop = self.check_early_stop()
                         if early_stop:
                             logger.info('--- stopping training due to early stop ---')
                             break
-                # normalize epoch loss
-                epoch_loss /= num_batch_trained  # not len(loader.loaders[TRAIN]) for early-stop
-                # todo: eval on corpus (per epoch)
-                self.epoch_curves[self.TRAIN_LOSS].append(epoch_loss)
+                # # normalize epoch loss
+                # epoch_loss /= num_batch_trained  # not len(loader.loaders[TRAIN]) for early-stop
+
+                # eval per epoch
+                train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN])
+                val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL])
+                self.epoch_curves[self.TRAIN_LOSS].append(train_loss)
+                self.epoch_curves[self.VAL_LOSS].append(val_loss)
                 if self.cparams[ControlKey.SAVE_EACH_EPOCH]:
                     self.save()
                 if early_stop:  # nested loop
                     break
-            # todo: final loss evaluate:
-            self.output_dict[OutputKey.FINAL_TRAIN_LOSS] = epoch_loss
+
+            # final loss evaluate:
+            train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN])
+            val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL])
+            self.output_dict[OutputKey.FINAL_TRAIN_LOSS] = train_loss
+            self.output_dict[OutputKey.FINAL_VAL_LOSS] = val_loss
             logger.info("training completed, results collected...")
