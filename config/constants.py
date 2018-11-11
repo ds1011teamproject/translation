@@ -19,6 +19,7 @@ class HyperParamKey:
     DEC_NUM_DIRECTIONS = 'dec_directions'
     ENC_DROPOUT = 'enc_dropout'
     DEC_DROPOUT = 'dec_dropout'
+    KERNEL_SIZE = 'kernel_size'
     # train related
     BATCH_SIZE = 'batch_size'
     NUM_EPOCH = 'num_epochs'
@@ -132,3 +133,6 @@ LogConfig = {
     }
 }
 
+
+class FastText:
+    DATA_PATH = 'data/wiki-news-300d-1M.vec'

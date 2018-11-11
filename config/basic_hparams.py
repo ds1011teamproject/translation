@@ -15,6 +15,7 @@ DEFAULT_HPARAMS = {
     HyperParamKey.ENC_NUM_DIRECTIONS: 1,
     HyperParamKey.DEC_NUM_LAYERS: 1,
     HyperParamKey.DEC_NUM_DIRECTIONS: 1,
+    HyperParamKey.KERNEL_SIZE: 3,
     # train
     HyperParamKey.TEACHER_FORCING_RATIO: 0.5,
     HyperParamKey.NUM_EPOCH: 1,
@@ -28,5 +29,5 @@ DEFAULT_HPARAMS = {
     HyperParamKey.OPTIMIZER: torch.optim.Adam,
     HyperParamKey.SCHEDULER: torch.optim.lr_scheduler.ExponentialLR,
     HyperParamKey.SCHEDULER_GAMMA: 0.95,
-    HyperParamKey.CRITERION: torch.nn.CrossEntropyLoss
+    HyperParamKey.CRITERION: torch.nn.CrossEntropyLoss,
 }
