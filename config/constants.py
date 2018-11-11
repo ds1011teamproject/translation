@@ -20,6 +20,7 @@ class HyperParamKey:
     ENC_DROPOUT = 'enc_dropout'
     DEC_DROPOUT = 'dec_dropout'
     KERNEL_SIZE = 'kernel_size'
+    MAX_LENGTH = 'max_length'
     # train related
     BATCH_SIZE = 'batch_size'
     NUM_EPOCH = 'num_epochs'
