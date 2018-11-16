@@ -1,5 +1,13 @@
+### Version 0.6.3 - 11/16/2018
+Changes:
+- refactor for memory concern:
+    - rename some variables in encoder/decoder and train-loop
+    - ModelManager and child models don't keep trained-embeddings in memory, only ACT_VOC_SIZE
+- updated default hyperparameters: use large hidden dimension 
+
 ### Version 0.6.2 - 11/15/2018
 Changes:
+- add demo script for RNN_GRU: demo_RNN_GRU.py
 - support using pre-trained word vectors:
     - FastText word vectors for vi/zh/en
     - text data required in directory: DATA_PATH/word/vectors/cc.<lang>.300.vec

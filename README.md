@@ -7,8 +7,23 @@ Team project for [Natural Language Processing with Representation Learning
 
 Vietnum-English and Chinese-English parallel corpus provided by the instructors. 
 
-#### * Pre-trained word embeddings:
-Using FastText word vectors. [(more information)](https://fasttext.cc/docs/en/crawl-vectors.html)
+* Pre-trained word embeddings:
+    Using FastText word vectors. [(more information)](https://fasttext.cc/docs/en/crawl-vectors.html)
+
+Please have your data ready in following structure:
+```
+<DATA_PATH>
+    |- iwslt-vi-en
+        |- train.tok.vi
+        |- ...
+    |- iwslt-zh-en
+        |- train.tok.zh
+        |- ...
+    |- word_vectors
+        |- cc.en.300.vec
+        |- cc.vi.300.vec
+        |- cc.zh.300.vec
+```
 
 ## Installation
 Do this installation if you are going to experiment with the code
@@ -23,7 +38,7 @@ $ mkdir model_saves
 
 ## Releasing Updates:
 Please do the following items when pushing a change out
-- increment version on setup.py
+- increment version for libs
 - add change notes to changelogs/README.md
 
 
