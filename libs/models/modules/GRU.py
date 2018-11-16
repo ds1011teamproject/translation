@@ -40,10 +40,10 @@ class Encoder(nn.Module):
         # init hidden
         hidden = self.init_hidden(enc_input.size()[0])
         # embedding
-        embedded = self.embed(enc_input)
+        enc_input = self.embed(enc_input)
         # rnn
-        embedded = nn.utils.rnn.pack_padded_sequence(embedded, lengths, batch_first=True)
-        output, hidden = self.gru(embedded, hidden)
+        enc_input = nn.utils.rnn.pack_padded_sequence(enc_input, lengths, batch_first=True)
+        _, hidden = self.gru(enc_input, hidden)
         # we don't need the output vectors thus no 'pad_packed_sequence'
         return hidden
 
@@ -78,11 +78,11 @@ class Decoder(nn.Module):
 
     def forward(self, dec_in, hidden):
         # embedding
-        embedded = self.embed(dec_in)
+        dec_in = self.embed(dec_in)
         # todo: do we need a ReLU like lab8?
-        # embedded = F.relu(embedded)
+        # dec_in = F.relu(dec_in)
         # rnn
-        output, hidden = self.gru(embedded, hidden)
-        output = self.out(output).squeeze(1)
-        output = self.softmax(output)   # logits
-        return output
+        dec_in, _ = self.gru(dec_in, hidden)
+        dec_in = self.out(dec_in).squeeze(1)
+        dec_in = self.softmax(dec_in)   # logits
+        return dec_in

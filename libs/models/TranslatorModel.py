@@ -121,7 +121,12 @@ class MTBaseModel(BaseModel):
     ################################
 
     def check_early_stop(self):
-        pass
+        lookback = self.hparams[HyperParamKey.EARLY_STOP_LOOK_BACK]
+        threshold = self.hparams[HyperParamKey.EARLY_STOP_REQ_PROG]
+        loss_hist = self.iter_curves[self.TRAIN_LOSS]
+        if len(loss_hist) > lookback + 1 and min(loss_hist[-lookback:]) > loss_hist[-lookback - 1] - threshold:
+            return True
+        return False
 
     def eval_model(self, dataloader):
         pass

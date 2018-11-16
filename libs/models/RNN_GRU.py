@@ -6,6 +6,7 @@ import random
 import torch
 import torch.nn.functional as F
 import numpy as np
+import gc
 
 from libs.models.TranslatorModel import MTBaseModel
 from libs.models.modules import GRU
@@ -41,9 +42,6 @@ class RNN_GRU(MTBaseModel):
                                    trained_emb=lparams[loaderKey.TRAINED_EMB][TAR] if hparams[hparamKey.USE_FT_EMB] else None,
                                    freeze_emb=hparams[hparamKey.FREEZE_EMB] if hparams[hparamKey.USE_FT_EMB] else False
                                    ).to(DEVICE)
-
-    def eval_model(self, dataloader):
-        pass
 
     def compute_loss(self, loader, criterion):
         """
@@ -82,12 +80,14 @@ class RNN_GRU(MTBaseModel):
         slen = slen[idx].unsqueeze(0)
         self.encoder.eval()
         self.decoder.eval()
+        # encoding
         enc_hidden = self.encoder(src, slen)
+        # decoding
         predicted = []
         dec_in = torch.LongTensor([iwslt.SOS_IDX]).unsqueeze(1).to(DEVICE)
         for t in range(tgt.size(1)):
-            dec_out = self.decoder(dec_in, enc_hidden)
-            topv, topi = dec_out.topk(1)
+            dec_in = self.decoder(dec_in, enc_hidden)
+            topv, topi = dec_in.topk(1)
             dec_in = topi.detach()
             predicted.append(dec_in)
             if dec_in.item() == iwslt.EOS_IDX:
@@ -95,14 +95,6 @@ class RNN_GRU(MTBaseModel):
         target = " ".join([id2token[e.item()] for e in tgt.squeeze() if e.item() != iwslt.PAD_IDX])
         translated = " ".join([id2token[e.item()] for e in predicted])
         logger.info("Translate randomly selected sentence:\nTruth:{}\nPredicted:{}".format(target, translated))
-
-    def check_early_stop(self):
-        lookback = self.hparams[hparamKey.EARLY_STOP_LOOK_BACK]
-        threshold = self.hparams[hparamKey.EARLY_STOP_REQ_PROG]
-        loss_hist = self.iter_curves[self.TRAIN_LOSS]
-        if len(loss_hist) > lookback + 1 and min(loss_hist[-lookback:]) > loss_hist[-lookback-1] - threshold:
-            return True
-        return False
 
     def train(self, loader, tqdm_handler):
         # todo: different from classification model train
@@ -119,7 +111,6 @@ class RNN_GRU(MTBaseModel):
 
             # epoch train
             for epoch in tqdm_handler(range(self.hparams[hparamKey.NUM_EPOCH] - self.cur_epoch)):
-                # epoch_loss = 0
                 # lr_scheduler step
                 self.enc_scheduler.step(epoch=self.cur_epoch)
                 self.dec_scheduler.step(epoch=self.cur_epoch)
@@ -127,10 +118,8 @@ class RNN_GRU(MTBaseModel):
                 logger.info("stepped scheduler to epoch = {}".format(self.enc_scheduler.last_epoch + 1))
 
                 # mini-batch train
-                # num_batch_trained = 0
-                for i, (src, tgt, src_lens, tgt_lens) in enumerate(loader.loaders[DataSplitType.TRAIN]):
+                for i, (src, tgt, src_lens, _) in enumerate(loader.loaders[DataSplitType.TRAIN]):
                     batch_loss = 0
-                    num_batch_trained = i
                     # tune to train mode
                     self.encoder.train()
                     self.decoder.train()
@@ -143,13 +132,14 @@ class RNN_GRU(MTBaseModel):
                     dec_in = torch.LongTensor([iwslt.SOS_IDX] * batch_size).unsqueeze(1).to(DEVICE)
                     teacher_forcing = True if random.random() < self.hparams[hparamKey.TEACHER_FORCING_RATIO] else False
                     for t in range(tgt.size(1)):  # step through time/seq_len axis
-                        dec_out = self.decoder(dec_in, enc_last_hidden)
-                        batch_loss += criterion(dec_out, tgt[:, t], reduction='sum', ignore_index=iwslt.PAD_IDX)
+                        # rename dec_out as dec_in to save memory
+                        dec_in = self.decoder(dec_in, enc_last_hidden)
+                        batch_loss += criterion(dec_in, tgt[:, t], reduction='sum', ignore_index=iwslt.PAD_IDX)
                         # generate next dec_in
                         if teacher_forcing:
                             dec_in = tgt[:, t].unsqueeze(1)
                         else:
-                            topv, topi = dec_out.topk(1)
+                            topv, topi = dec_in.topk(1)
                             dec_in = topi.detach()
                     # normalize loss by number of unpadded tokens
                     batch_loss /= tgt.data.gt(0).sum().float()
@@ -157,13 +147,13 @@ class RNN_GRU(MTBaseModel):
                     batch_loss.backward()
                     self.enc_optim.step()
                     self.dec_optim.step()
-                    # update epoch_loss
-                    # epoch_loss += batch_loss.item()
                     # report and check early-stop
                     if i % self.hparams[hparamKey.TRAIN_LOOP_EVAL_FREQ] == 0:
                         # a) compute losses
-                        train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN], criterion)
-                        val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL], criterion)
+                        # train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN], criterion)
+                        # val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL], criterion)
+                        train_loss = batch_loss
+                        val_loss = -1  # no loss computed
                         # b) report
                         logger.info("(epoch){}/{} (step){}/{} (trainLoss){} (valLoss){} (lr)e:{}/d:{}".format(
                             self.cur_epoch, self.hparams[hparamKey.NUM_EPOCH],
@@ -172,6 +162,7 @@ class RNN_GRU(MTBaseModel):
                             self.enc_optim.param_groups[0]['lr'], self.dec_optim.param_groups[0]['lr']))
                         # todo: eval randomly
                         self.eval_randomly(loader.loaders[DataSplitType.TRAIN], loader.id2token[iwslt.TAR])
+                        gc.collect()
                         # c) record current batch_loss
                         self.iter_curves[self.TRAIN_LOSS].append(train_loss)
                         self.iter_curves[self.VAL_LOSS].append(val_loss)
@@ -188,8 +179,6 @@ class RNN_GRU(MTBaseModel):
                         if early_stop:
                             logger.info('--- stopping training due to early stop ---')
                             break
-                # # normalize epoch loss
-                # epoch_loss /= num_batch_trained  # not len(loader.loaders[TRAIN]) for early-stop
 
                 # eval per epoch
                 train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN], criterion)

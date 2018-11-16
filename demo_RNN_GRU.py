@@ -13,8 +13,7 @@ from config.constants import PathKey, HyperParamKey
 conf.init_logger()
 logger = logging.getLogger('__main__')
 
-# new config
-### CHANGE YOUR DATA_PATH ###
+# ==== CHANGE YOUR DATA_PATH, MODEL_SAVES ====
 config_new = {
     PathKey.DATA_PATH: '/scratch/xl2053/nlp/',
     PathKey.INPUT_LANG: 'vi',
@@ -26,15 +25,16 @@ hparam_new = {
     HyperParamKey.ENC_LR: 0.001,
     HyperParamKey.DEC_LR: 0.001,
     HyperParamKey.NUM_EPOCH: 1,
-    HyperParamKey.BATCH_SIZE: 64,
-    HyperParamKey.TRAIN_LOOP_EVAL_FREQ: 300,
-    HyperParamKey.CHECK_EARLY_STOP: False
+    HyperParamKey.BATCH_SIZE: 32,
+    HyperParamKey.TRAIN_LOOP_EVAL_FREQ: 200,
+    HyperParamKey.CHECK_EARLY_STOP: False,
+    HyperParamKey.USE_FT_EMB: False
 }
 
 # model manager
 mgr = mm.ModelManager(hparams=hparam_new, control_overrides=config_new)
 mgr.load_data(mm.loaderRegister.IWSLT)
-mgr.new_model(mm.modelRegister.RNN_GRU, label='no_earlystop')
+mgr.new_model(mm.modelRegister.RNN_GRU, label='gru_test')
 mgr.train()
 logger.info("Demo RNN_GRU report:\n{}".format(mgr.model.output_dict))
 

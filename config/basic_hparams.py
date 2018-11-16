@@ -11,8 +11,8 @@ DEFAULT_HPARAMS = {
     HyperParamKey.USE_FT_EMB: True,
     HyperParamKey.FREEZE_EMB: True,
     # model
-    HyperParamKey.EMBEDDING_DIM: 50,
-    HyperParamKey.HIDDEN_SIZE: 100,
+    HyperParamKey.EMBEDDING_DIM: 300,
+    HyperParamKey.HIDDEN_SIZE: 1000,
     HyperParamKey.ENC_NUM_LAYERS: 1,
     HyperParamKey.ENC_NUM_DIRECTIONS: 1,
     HyperParamKey.DEC_NUM_LAYERS: 1,
@@ -20,7 +20,7 @@ DEFAULT_HPARAMS = {
     HyperParamKey.KERNEL_SIZE: 3,
     HyperParamKey.MAX_LENGTH: 100,
     # train
-    HyperParamKey.TEACHER_FORCING_RATIO: 0.5,
+    HyperParamKey.TEACHER_FORCING_RATIO: 1.0,  # full teacher forcing
     HyperParamKey.NUM_EPOCH: 1,
     HyperParamKey.ENC_LR: 0.01,
     HyperParamKey.DEC_LR: 0.01,
