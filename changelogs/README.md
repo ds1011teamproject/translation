@@ -1,3 +1,12 @@
+### Version 0.6.2 - 11/15/2018
+Changes:
+- support using pre-trained word vectors:
+    - FastText word vectors for vi/zh/en
+    - text data required in directory: DATA_PATH/word/vectors/cc.<lang>.300.vec
+To-do:
+- [URGENT] refactor ModelManager and codebase structure, reduce memory redundancy
+- upgrade train loop for TranslatorModel
+
 ### Version 0.6.1 - 11/09/2018
 Changes:
 - update RNN_GRU train loop

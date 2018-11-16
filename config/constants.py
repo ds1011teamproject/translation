@@ -8,6 +8,7 @@ class PathKey:
 
 class HyperParamKey:
     # vocabulary parameters
+    USE_FT_EMB = 'use_ft_embeddings'
     VOC_SIZE = 'voc_size'
     REMOVE_PUNC = 'remove_punc'
     # model parameters
@@ -46,6 +47,7 @@ class ControlKey:
 
 class LoaderParamKey:
     ACT_VOCAB_SIZE = 'act_vocab_size'
+    TRAINED_EMB = 'trained_embeddings'
 
 
 class StateKey:

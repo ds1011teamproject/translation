@@ -28,18 +28,22 @@ class RNN_GRU(MTBaseModel):
                                    hidden_size=self.hparams[hparamKey.HIDDEN_SIZE],
                                    num_layers=self.hparams[hparamKey.ENC_NUM_LAYERS],
                                    num_directions=self.hparams[hparamKey.ENC_NUM_DIRECTIONS],
-                                   dropout_prob=self.hparams.get(hparamKey.ENC_DROPOUT, 0.0)).to(DEVICE)
+                                   dropout_prob=self.hparams.get(hparamKey.ENC_DROPOUT, 0.0),
+                                   trained_emb=self.lparams[loaderKey.TRAINED_EMB][SRC] if self.hparams[hparamKey.USE_FT_EMB] else None
+                                   ).to(DEVICE)
         self.decoder = GRU.Decoder(vocab_size=self.lparams[loaderKey.ACT_VOCAB_SIZE][TAR],  # target language vocab size
                                    emb_size=self.hparams[hparamKey.EMBEDDING_DIM],
                                    hidden_size=self.hparams[hparamKey.HIDDEN_SIZE],
                                    num_layers=self.hparams[hparamKey.DEC_NUM_LAYERS],
                                    num_directions=self.hparams[hparamKey.DEC_NUM_DIRECTIONS],
-                                   dropout_prob=self.hparams.get(hparamKey.DEC_DROPOUT, 0.0)).to(DEVICE)
+                                   dropout_prob=self.hparams.get(hparamKey.DEC_DROPOUT, 0.0),
+                                   trained_emb=self.lparams[loaderKey.TRAINED_EMB][TAR] if self.hparams[hparamKey.USE_FT_EMB] else None
+                                   ).to(DEVICE)
 
     def eval_model(self, dataloader):
         pass
 
-    def compute_loss(self, loader):
+    def compute_loss(self, loader, criterion):
         """
         This computation is very time-consuming, slows down the training.
         (?) Solution: a) use large check_interval (current)
@@ -57,8 +61,8 @@ class RNN_GRU(MTBaseModel):
             dec_in = torch.LongTensor([iwslt.SOS_IDX] * batch_size).unsqueeze(1).to(DEVICE)
             for t in range(tgt.size(1)):  # seq_len axis
                 dec_out = self.decoder(dec_in, enc_last_hidden)
-                batch_loss += F.nll_loss(dec_out, tgt[:, t], reduction='sum',
-                                         ignore_index=iwslt.PAD_IDX)
+                batch_loss += criterion(dec_out, tgt[:, t], reduction='sum',
+                                        ignore_index=iwslt.PAD_IDX)
                 topv, topi = dec_out.topk(1)
                 dec_in = topi.detach()
             batch_loss /= tgt.data.gt(0).sum().float()
@@ -107,7 +111,7 @@ class RNN_GRU(MTBaseModel):
             # init optim/scheduler/criterion
             self._init_optim_and_scheduler()
             # todo: set criterion in hyper-parameter config
-            criterion = self.hparams[hparamKey.CRITERION]()
+            criterion = self.hparams[hparamKey.CRITERION]  # with brackets? "()"
             early_stop = False
             best_loss = np.Inf
 
@@ -138,7 +142,7 @@ class RNN_GRU(MTBaseModel):
                     teacher_forcing = True if random.random() < self.hparams[hparamKey.TEACHER_FORCING_RATIO] else False
                     for t in range(tgt.size(1)):  # step through time/seq_len axis
                         dec_out = self.decoder(dec_in, enc_last_hidden)
-                        batch_loss += F.nll_loss(dec_out, tgt[:, t], reduction='sum', ignore_index=iwslt.PAD_IDX)
+                        batch_loss += criterion(dec_out, tgt[:, t], reduction='sum', ignore_index=iwslt.PAD_IDX)
                         # generate next dec_in
                         if teacher_forcing:
                             dec_in = tgt[:, t].unsqueeze(1)
@@ -156,8 +160,8 @@ class RNN_GRU(MTBaseModel):
                     # report and check early-stop
                     if i % self.hparams[hparamKey.TRAIN_LOOP_EVAL_FREQ] == 0:
                         # a) compute losses
-                        train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN])
-                        val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL])
+                        train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN], criterion)
+                        val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL], criterion)
                         # b) report
                         logger.info("(epoch){}/{} (step){}/{} (trainLoss){} (valLoss){} (lr)e:{}/d:{}".format(
                             self.cur_epoch, self.hparams[hparamKey.NUM_EPOCH],
@@ -186,8 +190,8 @@ class RNN_GRU(MTBaseModel):
                 # epoch_loss /= num_batch_trained  # not len(loader.loaders[TRAIN]) for early-stop
 
                 # eval per epoch
-                train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN])
-                val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL])
+                train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN], criterion)
+                val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL], criterion)
                 self.epoch_curves[self.TRAIN_LOSS].append(train_loss)
                 self.epoch_curves[self.VAL_LOSS].append(val_loss)
                 if self.cparams[ControlKey.SAVE_EACH_EPOCH]:
@@ -196,8 +200,8 @@ class RNN_GRU(MTBaseModel):
                     break
 
             # final loss evaluate:
-            train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN])
-            val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL])
+            train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN], criterion)
+            val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL], criterion)
             self.output_dict[OutputKey.FINAL_TRAIN_LOSS] = train_loss
             self.output_dict[OutputKey.FINAL_VAL_LOSS] = val_loss
             logger.info("training completed, results collected...")

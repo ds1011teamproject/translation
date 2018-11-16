@@ -5,9 +5,10 @@ Team project for [Natural Language Processing with Representation Learning
 
 ## Data
 
-
-### * Project Data
 Vietnum-English and Chinese-English parallel corpus provided by the instructors. 
+
+#### * Pre-trained word embeddings:
+Using FastText word vectors. [(more information)](https://fasttext.cc/docs/en/crawl-vectors.html)
 
 ## Installation
 Do this installation if you are going to experiment with the code

@@ -50,13 +50,16 @@ class IwsltLoader(BaseLoader):
         super().__init__(cparams, hparams, tqdm)
         self.token2id = {}
         self.id2token = {}
+        self.trained_emb = {}
         pass
 
     def load(self):
         self._load_raw_data()
         self._data_to_pipe()
-        return {loaderKey.ACT_VOCAB_SIZE: {SRC: len(self.token2id[SRC]),
-                                           TAR: len(self.token2id[TAR])}}
+        results = {loaderKey.ACT_VOCAB_SIZE: {SRC: len(self.token2id[SRC]), TAR: len(self.token2id[TAR])}}
+        if self.hparams[hparamKey.USE_FT_EMB]:
+            results[loaderKey.TRAINED_EMB] = {SRC: self.trained_emb[SRC], TAR: self.trained_emb[TAR]}
+        return results
 
     def _load_raw_data(self):
         """
@@ -71,31 +74,39 @@ class IwsltLoader(BaseLoader):
         self.data[TAR] = load_datum_list(data_path=data_path,
                                          lang=self.cparams[PathKey.OUTPUT_LANG])
         # get language vocabulary
-        svocab_file = 'data/{}_voc{}.p'.format(self.cparams[PathKey.INPUT_LANG],
-                                               self.hparams[hparamKey.VOC_SIZE])
-        tvocab_file = 'data/{}_voc{}.p'.format(self.cparams[PathKey.OUTPUT_LANG],
-                                               self.hparams[hparamKey.VOC_SIZE])
-        try:
-            svocab = pkl.load(open(svocab_file, 'rb'))
-            tvocab = pkl.load(open(tvocab_file, 'rb'))
-            logger.info("Vocabulary found and loaded! (token2id, id2token, vocabs)")
-        except IOError:
-            # build vocabulary
-            logger.info("Building Vocabulary from raw files ... building source vocab")
-            svocab = get_vocabulary(self.data[SRC][DataSplitType.TRAIN], self.hparams[hparamKey.VOC_SIZE])
-
+        if self.hparams[hparamKey.USE_FT_EMB]:
+            ft_path = self.cparams[PathKey.DATA_PATH] + 'word_vectors/'
+            logger.info("Reading FastText embeddings from files ... building source vocab")
+            svocab = get_fasttext_embedding(ft_path, self.cparams[PathKey.INPUT_LANG], self.hparams[hparamKey.VOC_SIZE])
             logger.info("Building target vocab")
-            tvocab = get_vocabulary(self.data[TAR][DataSplitType.TRAIN], self.hparams[hparamKey.VOC_SIZE])
-            # save to file
-            pkl.dump(svocab, open(svocab_file, 'wb'))
-            pkl.dump(tvocab, open(tvocab_file, 'wb'))
-            logger.info("Generated token2id, id2token for both src/target languages!")
+            tvocab = get_fasttext_embedding(ft_path, self.cparams[PathKey.OUTPUT_LANG],
+                                            self.hparams[hparamKey.VOC_SIZE])
+        else:
+            svocab_file = 'data/{}_voc{}.p'.format(self.cparams[PathKey.INPUT_LANG],
+                                                   self.hparams[hparamKey.VOC_SIZE])
+            tvocab_file = 'data/{}_voc{}.p'.format(self.cparams[PathKey.OUTPUT_LANG],
+                                                   self.hparams[hparamKey.VOC_SIZE])
+            try:
+                svocab = pkl.load(open(svocab_file, 'rb'))
+                tvocab = pkl.load(open(tvocab_file, 'rb'))
+                logger.info("Vocabulary found and loaded! (token2id, id2token, vocabs)")
+            except IOError:
+                logger.info("Building Vocabulary from train set ... building source vocab")
+                svocab = get_vocabulary(self.data[SRC][DataSplitType.TRAIN], self.hparams[hparamKey.VOC_SIZE])
+                logger.info("Building target vocab")
+                tvocab = get_vocabulary(self.data[TAR][DataSplitType.TRAIN], self.hparams[hparamKey.VOC_SIZE])
+                # save to file
+                pkl.dump(svocab, open(svocab_file, 'wb'))
+                pkl.dump(tvocab, open(tvocab_file, 'wb'))
+                logger.info("Generated token2id, id2token for both src/target languages!")
 
         # keep token2id, id2token in memory
         self.token2id[SRC] = svocab['token2id']
         self.token2id[TAR] = tvocab['token2id']
         self.id2token[SRC] = svocab['id2token']
         self.id2token[TAR] = tvocab['id2token']
+        self.trained_emb[SRC] = svocab.get('trained_emb', None)  # todo: reduce memory cost
+        self.trained_emb[TAR] = tvocab.get('trained_emb', None)
         # convert tokens to indices
         logger.info("Convert token to index for source language ...")
         self._update_datum_indices(self.token2id[SRC], mode=SRC)
@@ -256,3 +267,34 @@ def get_vocabulary(datum_list, vocab_size):
     return {'token2id': token2id,
             'id2token': vocab}
 
+
+def get_fasttext_embedding(data_path, language, vocab_size):
+    """
+    Get pre-trained word embeddings
+    """
+    ft_file = '{}cc.{}.300.vec'.format(data_path, language)
+    # read file and build vocabulary
+    loaded_embeddings_ft = np.zeros((vocab_size, 300))
+    words_ft = {PAD_TOKEN: PAD_IDX,
+                UNK_TOKEN: UNK_IDX,
+                SOS_TOKEN: SOS_IDX,
+                EOS_TOKEN: EOS_IDX}
+    idx2words_ft = [PAD_TOKEN, UNK_TOKEN, SOS_TOKEN, EOS_TOKEN]
+    # <pad> and <unk> vectors
+    loaded_embeddings_ft[PAD_IDX, :] = np.zeros((1, 300))
+    loaded_embeddings_ft[UNK_IDX, :] = np.random.rand(1, 300)
+    start_idx = len(idx2words_ft)
+    with open(ft_file) as f:
+        # Each line in FastText pre-trained word vectors file:
+        # 0-index: word
+        # following: embedded vectors
+        for i, line in enumerate(f):
+            if i >= (vocab_size - start_idx):
+                break
+            s = line.split()
+            loaded_embeddings_ft[i + start_idx, :] = np.asarray(s[1:])
+            words_ft[s[0]] = i + start_idx
+            idx2words_ft.append(s[0])
+    return {'token2id': words_ft,
+            'id2token': idx2words_ft,
+            'trained_emb': loaded_embeddings_ft}
