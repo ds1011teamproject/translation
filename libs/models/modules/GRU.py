@@ -11,7 +11,8 @@ class Encoder(nn.Module):
     Machine Translation Encoder
     Gated recurrent unit (GRU)
     """
-    def __init__(self, vocab_size, emb_size, hidden_size, num_layers, num_directions, dropout_prob, trained_emb=None):
+    def __init__(self, vocab_size, emb_size, hidden_size, num_layers, num_directions,
+                 dropout_prob, trained_emb=None, freeze_emb=False):
         super(Encoder, self).__init__()
         self.num_layers = num_layers
         self.num_directions = num_directions
@@ -20,7 +21,7 @@ class Encoder(nn.Module):
             self.embed = nn.Embedding(vocab_size, emb_size, padding_idx=PAD_IDX)
         else:
             trained_emb = torch.from_numpy(trained_emb).float()
-            self.embed = nn.Embedding.from_pretrained(trained_emb, freeze=True)
+            self.embed = nn.Embedding.from_pretrained(trained_emb, freeze=freeze_emb)
         self.gru = nn.GRU(
             input_size=emb_size,
             hidden_size=hidden_size,
@@ -52,7 +53,8 @@ class Decoder(nn.Module):
     Machine Translation Decoder
     Gated recurrent unit (GRU)
     """
-    def __init__(self, vocab_size, emb_size, hidden_size, num_layers, num_directions, dropout_prob, trained_emb=None):
+    def __init__(self, vocab_size, emb_size, hidden_size, num_layers, num_directions,
+                 dropout_prob, trained_emb=None, freeze_emb=False):
         super(Decoder, self).__init__()
         self.num_layers = num_layers
         self.num_directions = num_directions
@@ -61,7 +63,7 @@ class Decoder(nn.Module):
             self.embed = nn.Embedding(vocab_size, emb_size, padding_idx=PAD_IDX)
         else:
             trained_emb = torch.from_numpy(trained_emb).float()
-            self.embed = nn.Embedding.from_pretrained(trained_emb, freeze=True)
+            self.embed = nn.Embedding.from_pretrained(trained_emb, freeze=freeze_emb)
         self.gru = nn.GRU(
             input_size=emb_size,
             hidden_size=hidden_size,

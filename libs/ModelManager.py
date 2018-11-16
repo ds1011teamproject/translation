@@ -9,7 +9,7 @@ from libs.data_loaders import registry as load_reg
 from libs.models.registry import modelRegister
 from libs.data_loaders.registry import loaderRegister
 import matplotlib.pyplot as plt
-from config.constants import PathKey, LoadingKey
+from config.constants import PathKey, LoadingKey, HyperParamKey, LoaderParamKey
 from config import basic_hparams
 from config import basic_conf as conf
 from tqdm import tqdm_notebook
@@ -93,7 +93,10 @@ class ModelManager:
         cur_constructor = mod_reg.reg[model_name]
         model_path = os.path.join(self.cparams[PathKey.MODEL_SAVES], safe_label + os.sep)
         self.cparams[PathKey.MODEL_PATH] = model_path
-        self.model = cur_constructor(self.hparams, self.lparams, self.cparams, safe_label, nolog=nolog)
+        lparams = dict(); lparams.update(self.lparams)
+        if self.hparams[HyperParamKey.USE_FT_EMB]:
+            lparams[LoaderParamKey.TRAINED_EMB] = self.dataloader.trained_emb
+        self.model = cur_constructor(self.hparams, lparams, self.cparams, safe_label, nolog=nolog)
 
         # make the directory for model saves:
         os.makedirs(model_path, exist_ok=True)

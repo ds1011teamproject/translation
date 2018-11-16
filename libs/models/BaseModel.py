@@ -32,7 +32,7 @@ class BaseModel(ABC):
         super().__init__()
         self.label = label
         self.hparams = hparams      # model hyperparameters
-        self.lparams = lparams      # model loader parameters
+        # self.lparams = lparams      # model loader parameters
         self.cparams = cparams      # model control parameters
         self.cur_epoch = 0          # tracks the current epoch (for saving/loading and scheduler) 0 indexed
 
@@ -65,8 +65,8 @@ class BaseModel(ABC):
         for key in self.hparams.keys():
             f.write("\n%s - %s" % (key, self.hparams[key]))
         f.write('\n\nLoader parameters used:')
-        for key in self.lparams.keys():
-            f.write("\n%s - %s" % (key, self.lparams[key]))
+        # for key in self.lparams.keys():
+        #     f.write("\n%s - %s" % (key, self.lparams[key]))
         f.write('\n\nControl parameters used:')
         for key in self.cparams.keys():
             f.write("\n%s - %s" % (key, self.cparams[key]))
@@ -90,8 +90,8 @@ class BaseModel(ABC):
         """ writes hparams, lparams to the output_dict """
         if isinstance(self.hparams, dict):
             self.output_dict.update(self.hparams)
-        if isinstance(self.lparams, dict):
-            self.output_dict.update(self.lparams)
+        # if isinstance(self.lparams, dict):
+        #     self.output_dict.update(self.lparams)
 
     def _init_optim_and_scheduler(self):
         self._init_optim()

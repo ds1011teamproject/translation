@@ -57,8 +57,8 @@ class IwsltLoader(BaseLoader):
         self._load_raw_data()
         self._data_to_pipe()
         results = {loaderKey.ACT_VOCAB_SIZE: {SRC: len(self.token2id[SRC]), TAR: len(self.token2id[TAR])}}
-        if self.hparams[hparamKey.USE_FT_EMB]:
-            results[loaderKey.TRAINED_EMB] = {SRC: self.trained_emb[SRC], TAR: self.trained_emb[TAR]}
+        # if self.hparams[hparamKey.USE_FT_EMB]:
+        #     results[loaderKey.TRAINED_EMB] = {SRC: self.trained_emb[SRC], TAR: self.trained_emb[TAR]}
         return results
 
     def _load_raw_data(self):

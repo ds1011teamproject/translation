@@ -23,21 +23,23 @@ class RNN_GRU(MTBaseModel):
     def __init__(self, hparams, lparams, cparams, label='gru-scratch', nolog=True):
         super().__init__(hparams, lparams, cparams, label, nolog)
         # encoder-decoder system
-        self.encoder = GRU.Encoder(vocab_size=self.lparams[loaderKey.ACT_VOCAB_SIZE][SRC],  # source language vocab size
-                                   emb_size=self.hparams[hparamKey.EMBEDDING_DIM],
-                                   hidden_size=self.hparams[hparamKey.HIDDEN_SIZE],
-                                   num_layers=self.hparams[hparamKey.ENC_NUM_LAYERS],
-                                   num_directions=self.hparams[hparamKey.ENC_NUM_DIRECTIONS],
-                                   dropout_prob=self.hparams.get(hparamKey.ENC_DROPOUT, 0.0),
-                                   trained_emb=self.lparams[loaderKey.TRAINED_EMB][SRC] if self.hparams[hparamKey.USE_FT_EMB] else None
+        self.encoder = GRU.Encoder(vocab_size=lparams[loaderKey.ACT_VOCAB_SIZE][SRC],  # source language vocab size
+                                   emb_size=hparams[hparamKey.EMBEDDING_DIM],
+                                   hidden_size=hparams[hparamKey.HIDDEN_SIZE],
+                                   num_layers=hparams[hparamKey.ENC_NUM_LAYERS],
+                                   num_directions=hparams[hparamKey.ENC_NUM_DIRECTIONS],
+                                   dropout_prob=hparams.get(hparamKey.ENC_DROPOUT, 0.0),
+                                   trained_emb=lparams[loaderKey.TRAINED_EMB][SRC] if hparams[hparamKey.USE_FT_EMB] else None,
+                                   freeze_emb=hparams[hparamKey.FREEZE_EMB] if hparams[hparamKey.USE_FT_EMB] else False
                                    ).to(DEVICE)
-        self.decoder = GRU.Decoder(vocab_size=self.lparams[loaderKey.ACT_VOCAB_SIZE][TAR],  # target language vocab size
-                                   emb_size=self.hparams[hparamKey.EMBEDDING_DIM],
-                                   hidden_size=self.hparams[hparamKey.HIDDEN_SIZE],
-                                   num_layers=self.hparams[hparamKey.DEC_NUM_LAYERS],
-                                   num_directions=self.hparams[hparamKey.DEC_NUM_DIRECTIONS],
-                                   dropout_prob=self.hparams.get(hparamKey.DEC_DROPOUT, 0.0),
-                                   trained_emb=self.lparams[loaderKey.TRAINED_EMB][TAR] if self.hparams[hparamKey.USE_FT_EMB] else None
+        self.decoder = GRU.Decoder(vocab_size=lparams[loaderKey.ACT_VOCAB_SIZE][TAR],  # target language vocab size
+                                   emb_size=hparams[hparamKey.EMBEDDING_DIM],
+                                   hidden_size=hparams[hparamKey.HIDDEN_SIZE],
+                                   num_layers=hparams[hparamKey.DEC_NUM_LAYERS],
+                                   num_directions=hparams[hparamKey.DEC_NUM_DIRECTIONS],
+                                   dropout_prob=hparams.get(hparamKey.DEC_DROPOUT, 0.0),
+                                   trained_emb=lparams[loaderKey.TRAINED_EMB][TAR] if hparams[hparamKey.USE_FT_EMB] else None,
+                                   freeze_emb=hparams[hparamKey.FREEZE_EMB] if hparams[hparamKey.USE_FT_EMB] else False
                                    ).to(DEVICE)
 
     def eval_model(self, dataloader):

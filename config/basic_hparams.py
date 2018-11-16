@@ -9,6 +9,7 @@ DEFAULT_HPARAMS = {
     # vocab
     HyperParamKey.VOC_SIZE: 100000,
     HyperParamKey.USE_FT_EMB: True,
+    HyperParamKey.FREEZE_EMB: True,
     # model
     HyperParamKey.EMBEDDING_DIM: 50,
     HyperParamKey.HIDDEN_SIZE: 100,
@@ -31,5 +32,5 @@ DEFAULT_HPARAMS = {
     HyperParamKey.OPTIMIZER: torch.optim.Adam,
     HyperParamKey.SCHEDULER: torch.optim.lr_scheduler.ExponentialLR,
     HyperParamKey.SCHEDULER_GAMMA: 0.95,
-    HyperParamKey.CRITERION: torch.nn.NLLLoss,
+    HyperParamKey.CRITERION: torch.nn.functional.nll_loss,
 }

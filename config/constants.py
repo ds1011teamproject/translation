@@ -9,6 +9,7 @@ class PathKey:
 class HyperParamKey:
     # vocabulary parameters
     USE_FT_EMB = 'use_ft_embeddings'
+    FREEZE_EMB = 'freeze_emb_vectors'
     VOC_SIZE = 'voc_size'
     REMOVE_PUNC = 'remove_punc'
     # model parameters
