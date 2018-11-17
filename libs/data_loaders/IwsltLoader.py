@@ -135,55 +135,55 @@ class IwsltLoader(BaseLoader):
         assert self.data[SRC].keys() == self.data[TAR].keys(), \
             "Source and Target data do not have the same keys! cannot construct DataLoaders"
         for split in self.data[SRC].keys():  # train, val, test
-            cur_ds = IWSLTDataset(self.data[SRC][split], self.data[TAR][split])
+            cur_ds = IWSLTDataset(self.data[SRC][split], self.data[TAR][split],
+                                  max_length=self.hparams[hparamKey.MAX_LENGTH])
             self.loaders[split] = DataLoader(dataset=cur_ds,
                                              batch_size=self.hparams[hparamKey.BATCH_SIZE],
-                                             collate_fn=iwslt_collate_func,
+                                             collate_fn=self.iwslt_collate_func,
                                              shuffle=shuffle_dict[split])
 
+    def iwslt_collate_func(self, batch):
+        """
+        **NOTE**: the batch is automatically sorted by length of the source sentence!
+        """
+        s_list, t_list = [], []  # source list and target list of token indices
+        s_len_list, t_len_list = [], []  # source and target list of lengths
+        for datum in batch:
+            s_len_list.append(datum[2])
+            t_len_list.append(datum[3])
 
-def iwslt_collate_func(batch):
-    """
-    **NOTE**: the batch is automatically sorted by length of the source sentence!
-    """
-    s_list, t_list = [], []  # source list and target list of token indices
-    s_len_list, t_len_list = [], []  # source and target list of lengths
-    for datum in batch:
-        s_len_list.append(datum[2])
-        t_len_list.append(datum[3])
+        max_length1 = self.hparams[hparamKey.MAX_LENGTH]  # np.max(s_len_list)
+        max_length2 = self.hparams[hparamKey.MAX_LENGTH]  # np.max(t_len_list)
 
-    max_length1 = np.max(s_len_list)
-    max_length2 = np.max(t_len_list)
+        # padding
+        for datum in batch:
+            padded_vec1 = np.pad(np.array(datum[0]),
+                                 pad_width=(0, max_length1 - datum[2]),
+                                 mode="constant", constant_values=0)
+            s_list.append(padded_vec1)
 
-    # padding
-    for datum in batch:
-        padded_vec1 = np.pad(np.array(datum[0]),
-                             pad_width=(0, max_length1 - datum[2]),
-                             mode="constant", constant_values=0)
-        s_list.append(padded_vec1)
+            padded_vec2 = np.pad(np.array(datum[1]),
+                                 pad_width=(0, max_length2 - datum[3]),
+                                 mode="constant", constant_values=0)
+            t_list.append(padded_vec2)
 
-        padded_vec2 = np.pad(np.array(datum[1]),
-                             pad_width=(0, max_length2 - datum[3]),
-                             mode="constant", constant_values=0)
-        t_list.append(padded_vec2)
+        n1 = np.array(s_list).astype(int)
+        n2 = np.array(t_list).astype(int)
 
-    n1 = np.array(s_list).astype(int)
-    n2 = np.array(t_list).astype(int)
+        t_sent1 = torch.from_numpy(n1).to(DEVICE)
+        t_sent2 = torch.from_numpy(n2).to(DEVICE)
+        t_len1 = torch.LongTensor(s_len_list).to(DEVICE)
+        t_len2 = torch.LongTensor(t_len_list).to(DEVICE)
 
-    t_sent1 = torch.from_numpy(n1).to(DEVICE)
-    t_sent2 = torch.from_numpy(n2).to(DEVICE)
-    t_len1 = torch.LongTensor(s_len_list).to(DEVICE)
-    t_len2 = torch.LongTensor(t_len_list).to(DEVICE)
+        # sorting by descending len1
+        sorted_t_len1, idx_sort = torch.sort(t_len1, dim=0, descending=True)
 
-    # sorting by descending len1
-    sorted_t_len1, idx_sort = torch.sort(t_len1, dim=0, descending=True)
-
-    return [
-        torch.index_select(t_sent1, 0, idx_sort),
-        torch.index_select(t_sent2, 0, idx_sort),
-        sorted_t_len1,
-        torch.index_select(t_len2, 0, idx_sort),
-    ]
+        return [
+            torch.index_select(t_sent1, 0, idx_sort),
+            torch.index_select(t_sent2, 0, idx_sort),
+            sorted_t_len1,
+            torch.index_select(t_len2, 0, idx_sort),
+        ]
 
 
 class IWSLTDatum:
@@ -200,11 +200,12 @@ class IWSLTDatum:
 
 
 class IWSLTDataset(Dataset):
-    def __init__(self, source_list, target_list):
+    def __init__(self, source_list, target_list, max_length):
         assert len(source_list) == len(target_list), \
             "Length of source and target is not the same! Cannot construct Dataset object"
         self.s_list = source_list
         self.t_list = target_list
+        self.max_length = max_length
 
     def __len__(self):
         return len(self.s_list)  # already asserted that the 2 lengths are the same (source/target)
@@ -213,10 +214,9 @@ class IWSLTDataset(Dataset):
         """Get indices vector for i-th IWSLT Datum
         order is (source, target, source len, target len)
         """
-        return [self.s_list[idx].token_indices,
-                self.t_list[idx].token_indices,
-                len(self.s_list[idx].token_indices),
-                len(self.t_list[idx].token_indices)]
+        src = self.s_list[idx].token_indices[:self.max_length]
+        tgt = self.t_list[idx].token_indices[:self.max_length]
+        return [src, tgt, len(src), len(tgt)]
 
 
 ##################
