@@ -8,6 +8,7 @@ from libs.models import registry as mod_reg
 from libs.data_loaders import registry as load_reg
 from libs.models.registry import modelRegister
 from libs.data_loaders.registry import loaderRegister
+from config.basic_conf import DEVICE
 import matplotlib.pyplot as plt
 from config.constants import PathKey, LoadingKey, HyperParamKey, LoaderParamKey
 from config import basic_hparams
@@ -16,6 +17,7 @@ from tqdm import tqdm_notebook
 from tqdm import tqdm
 from string import punctuation
 import logging
+import pickle
 from libs._version import __version__
 
 logger = logging.getLogger('__main__')
@@ -49,6 +51,7 @@ class ModelManager:
         self.results = []               # list of saved results, can be output to a pandas dataframe w/ get_results
         self.mode = mode                # able to operate in console or notebook mode
         self.tqdm = tqdm                # memory ref to the tqdm handler in the correct mode
+        self.device = DEVICE            # device used for the computation graphs
         self.change_mode(mode)          # setting the right mode fo the tqdm handler
 
         logger.info(modelRegister.model_list)
@@ -120,6 +123,9 @@ class ModelManager:
         self.model.train(self.dataloader, self.tqdm)
         self.results.append(self.model.output_dict)
 
+        # at each step pickle the intermediate results
+        pickle.dump(self.results, open(self.cparams[PathKey.MODEL_PATH] + 'results_list.p', 'wb'))
+
     def dump_model(self):
         """ dumps the existing model to clear up memory """
         self.model = None
@@ -140,16 +146,13 @@ class ModelManager:
             else:
                 curves = self.model.epoch_curves
                 xlab = 'model epoch'
-            f, ax = plt.subplots(1, 2, figsize=(15, 7))
-            ax[0].plot(curves[self.model.TRAIN_ACC], label='training acc')
-            ax[0].plot(curves[self.model.VAL_ACC], label='val acc')
-            ax[0].set_xlabel(xlab)
-            ax[0].legend()
-
-            ax[1].plot(curves[self.model.TRAIN_LOSS], label='training loss')
-            ax[1].plot(curves[self.model.VAL_LOSS], label='val loss')
-            ax[1].legend()
-            ax[1].set_xlabel(xlab)
+            f, ax = plt.subplots(1, 1, figsize=(10, 7))
+            ax.plot(curves[self.model.TRAIN_LOSS], label='training loss')
+            ax2 = ax.twinx()
+            ax2.plot(curves[self.model.VAL_LOSS], label='val loss')
+            ax.set_xlabel(xlab)
+            ax.legend()
+            ax2.legend(bbox_to_anchor=(1, 0.95))
 
             if self.mode == self.OPT_MODE_CONSOLE:
                 fn = self.cparams[PathKey.MODEL_PATH] + mode + '_curves.png'

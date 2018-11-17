@@ -1,3 +1,10 @@
+### Version 0.6.4 - 11/16/2018
+Changes:
+- Added some small functionality to ModelManager
+    - new graphing only loss functions no accuracy since irrelevant
+    - added new attribute in ModelManager called self.device that shows which GPU it is on
+    - training loop now pickles the self.results list to the model_saves/ at the end of each training loop (in cases where we are grid searching over many training loops)
+
 ### Version 0.6.3 - 11/16/2018
 Changes:
 - refactor for memory concern:
