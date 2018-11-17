@@ -8,8 +8,8 @@ import torch
 DEFAULT_HPARAMS = {
     # vocab
     HyperParamKey.VOC_SIZE: 100000,
-    HyperParamKey.USE_FT_EMB: True,
-    HyperParamKey.FREEZE_EMB: True,
+    HyperParamKey.USE_FT_EMB: False,
+    HyperParamKey.FREEZE_EMB: False,
     # model
     HyperParamKey.EMBEDDING_DIM: 300,
     HyperParamKey.HIDDEN_SIZE: 1000,
@@ -21,7 +21,7 @@ DEFAULT_HPARAMS = {
     HyperParamKey.MAX_LENGTH: 100,
     # train
     HyperParamKey.TEACHER_FORCING_RATIO: 1.0,  # full teacher forcing
-    HyperParamKey.NUM_EPOCH: 1,
+    HyperParamKey.NUM_EPOCH: 100,
     HyperParamKey.ENC_LR: 0.01,
     HyperParamKey.DEC_LR: 0.01,
     HyperParamKey.BATCH_SIZE: 32,
@@ -33,4 +33,6 @@ DEFAULT_HPARAMS = {
     HyperParamKey.SCHEDULER: torch.optim.lr_scheduler.ExponentialLR,
     HyperParamKey.SCHEDULER_GAMMA: 0.95,
     HyperParamKey.CRITERION: torch.nn.functional.nll_loss,
+    # testing implementation parameters
+    HyperParamKey.NUM_TRAIN_SENT_TO_LOAD: 1,  # -1 or None indicates to load everything
 }

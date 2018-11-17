@@ -39,6 +39,7 @@ class HyperParamKey:
     SCHEDULER = 'scheduler'
     SCHEDULER_GAMMA = 'scheduler_gamma'
     CRITERION = 'criterion'
+    NUM_TRAIN_SENT_TO_LOAD = 'num_train_sent_to_load'
 
 
 class ControlKey:

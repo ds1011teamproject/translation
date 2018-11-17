@@ -69,10 +69,12 @@ class IwsltLoader(BaseLoader):
         logger.info("Get source language datum list...")
         data_path = self.cparams[PathKey.DATA_PATH] + 'iwslt-%s-en/' % self.cparams[PathKey.INPUT_LANG]
         self.data[SRC] = load_datum_list(data_path=data_path,
-                                         lang=self.cparams[PathKey.INPUT_LANG])
+                                         lang=self.cparams[PathKey.INPUT_LANG],
+                                         num_to_load=self.hparams[hparamKey.NUM_TRAIN_SENT_TO_LOAD])
         logger.info("Get target language datum list...")
         self.data[TAR] = load_datum_list(data_path=data_path,
-                                         lang=self.cparams[PathKey.OUTPUT_LANG])
+                                         lang=self.cparams[PathKey.OUTPUT_LANG],
+                                         num_to_load=self.hparams[hparamKey.NUM_TRAIN_SENT_TO_LOAD])
         # get language vocabulary
         if self.hparams[hparamKey.USE_FT_EMB]:
             ft_path = self.cparams[PathKey.DATA_PATH] + 'word_vectors/'
@@ -92,9 +94,11 @@ class IwsltLoader(BaseLoader):
                 logger.info("Vocabulary found and loaded! (token2id, id2token, vocabs)")
             except IOError:
                 logger.info("Building Vocabulary from train set ... building source vocab")
-                svocab = get_vocabulary(self.data[SRC][DataSplitType.TRAIN], self.hparams[hparamKey.VOC_SIZE])
+                svocab = get_vocabulary(self.data[SRC][DataSplitType.TRAIN],
+                                        self.hparams[hparamKey.VOC_SIZE])
                 logger.info("Building target vocab")
-                tvocab = get_vocabulary(self.data[TAR][DataSplitType.TRAIN], self.hparams[hparamKey.VOC_SIZE])
+                tvocab = get_vocabulary(self.data[TAR][DataSplitType.TRAIN],
+                                        self.hparams[hparamKey.VOC_SIZE])
                 # save to file
                 pkl.dump(svocab, open(svocab_file, 'wb'))
                 pkl.dump(tvocab, open(tvocab_file, 'wb'))
@@ -226,7 +230,7 @@ def tokenize(line):
     return line.replace("\n", "").split()
 
 
-def raw_to_datumlist(data_path, language, data_split_type):
+def raw_to_datumlist(data_path, language, data_split_type, num_to_load=None):
     """
     Convert raw text from file into a Datum List
     :param data_path: path to find data file (tokenized iwslt data)
@@ -236,19 +240,26 @@ def raw_to_datumlist(data_path, language, data_split_type):
     """
     datum_list = []
     file_path = '{}{}.tok.{}'.format(data_path, data_split_type, language)
+    lines_loaded = 0
     with open(file_path, 'r') as f:
         lines = f.readlines()
         for line in lines:
             datum = IWSLTDatum(line)
             datum.set_tokens(tokenize(line))
             datum_list.append(datum)
+            lines_loaded += 1
+
+            if num_to_load is not None and num_to_load > 0:
+                if lines_loaded >= num_to_load:
+                    break
+
     return datum_list
 
 
-def load_datum_list(data_path, lang):
-    return {DataSplitType.TRAIN: raw_to_datumlist(data_path, lang, DataSplitType.TRAIN),
-            DataSplitType.VAL: raw_to_datumlist(data_path, lang, DataSplitType.VAL),
-            DataSplitType.TEST: raw_to_datumlist(data_path, lang, DataSplitType.TEST)}
+def load_datum_list(data_path, lang, num_to_load=None):
+    return {DataSplitType.TRAIN: raw_to_datumlist(data_path, lang, DataSplitType.TRAIN, num_to_load),
+            DataSplitType.VAL: raw_to_datumlist(data_path, lang, DataSplitType.VAL, num_to_load),
+            DataSplitType.TEST: raw_to_datumlist(data_path, lang, DataSplitType.TEST, num_to_load)}
 
 
 def get_vocabulary(datum_list, vocab_size):
