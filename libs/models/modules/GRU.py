@@ -16,7 +16,7 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
         self.num_layers = num_layers
         self.num_directions = num_directions
-        self.hidden_size = hidden_size
+        self.hidden_size = hidden_size // num_directions
         if trained_emb is None:
             self.embed = nn.Embedding(vocab_size, emb_size, padding_idx=PAD_IDX)
         else:
@@ -24,8 +24,8 @@ class Encoder(nn.Module):
             self.embed = nn.Embedding.from_pretrained(trained_emb, freeze=freeze_emb)
         self.gru = nn.GRU(
             input_size=emb_size,
-            hidden_size=hidden_size,
-            num_layers=num_layers,
+            hidden_size=self.hidden_size,
+            num_layers=self.num_layers,
             bias=True,
             batch_first=True,
             dropout=dropout_prob,
@@ -34,17 +34,20 @@ class Encoder(nn.Module):
 
     def init_hidden(self, batch_size):
         return torch.zeros((self.num_layers * self.num_directions, batch_size,
-                            self.hidden_size // self.num_directions), device=DEVICE)
+                            self.hidden_size), device=DEVICE)
 
     def forward(self, enc_input, lengths):
         # init hidden
-        hidden = self.init_hidden(enc_input.size()[0])
+        batch_size = enc_input.size()[0]
+        hidden = self.init_hidden(batch_size)
         # embedding
         enc_input = self.embed(enc_input)
         # rnn
         enc_input = nn.utils.rnn.pack_padded_sequence(enc_input, lengths, batch_first=True)
         _, hidden = self.gru(enc_input, hidden)
         # we don't need the output vectors thus no 'pad_packed_sequence'
+        if self.num_directions == 2:
+            hidden = hidden[-2:].transpose(0, 1).contiguous().view(1, batch_size, -1)
         return hidden
 
 
@@ -79,8 +82,7 @@ class Decoder(nn.Module):
     def forward(self, dec_in, hidden):
         # embedding
         dec_in = self.embed(dec_in)
-        # todo: do we need a ReLU like lab8?
-        # dec_in = F.relu(dec_in)
+        dec_in = F.relu(dec_in)
         # rnn
         dec_in, _ = self.gru(dec_in, hidden)
         dec_in = self.out(dec_in).squeeze(1)
