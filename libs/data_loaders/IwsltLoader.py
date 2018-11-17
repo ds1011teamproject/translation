@@ -223,7 +223,7 @@ def tokenize(line):
     if line == '':
         return []
     line = line[0].lower() + line[1:]
-    return line.replace("\n", "").split(" ")
+    return line.replace("\n", "").split()
 
 
 def raw_to_datumlist(data_path, language, data_split_type):
