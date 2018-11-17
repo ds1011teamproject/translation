@@ -283,6 +283,9 @@ def get_fasttext_embedding(data_path, language, vocab_size):
     # <pad> and <unk> vectors
     loaded_embeddings_ft[PAD_IDX, :] = np.zeros((1, 300))
     loaded_embeddings_ft[UNK_IDX, :] = np.random.rand(1, 300)
+    # <sos> and <eos>
+    loaded_embeddings_ft[SOS_IDX, :] = 0.5 * np.ones((1, 300))
+    loaded_embeddings_ft[EOS_IDX, :] = -0.5 * np.ones((1, 300))
     start_idx = len(idx2words_ft)
     with open(ft_file) as f:
         # Each line in FastText pre-trained word vectors file:

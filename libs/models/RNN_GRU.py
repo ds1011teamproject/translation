@@ -59,12 +59,17 @@ class RNN_GRU(MTBaseModel):
             enc_last_hidden = self.encoder(src, slen)
             # decoding
             dec_in = torch.LongTensor([iwslt.SOS_IDX] * batch_size).unsqueeze(1).to(DEVICE)
+            teacher_forcing = True if random.random() < self.hparams[hparamKey.TEACHER_FORCING_RATIO] else False
             for t in range(tgt.size(1)):  # seq_len axis
                 dec_out = self.decoder(dec_in, enc_last_hidden)
                 batch_loss += criterion(dec_out, tgt[:, t], reduction='sum',
                                         ignore_index=iwslt.PAD_IDX)
-                topv, topi = dec_out.topk(1)
-                dec_in = topi.detach()
+                # generate next dec_in
+                if teacher_forcing:
+                    dec_in = tgt[:, t].unsqueeze(1)
+                else:
+                    topv, topi = dec_out.topk(1)
+                    dec_in = topi.detach()
             batch_loss /= tgt.data.gt(0).sum().float()
             loss += batch_loss.item()
         # normalize
