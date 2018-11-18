@@ -3,11 +3,13 @@ registry for model constructors, used by ModelManager to lookup model constructo
 """
 from libs.models.CNN import CNN
 from libs.models.RNN_GRU import RNN_GRU
+from libs.models.RNN_Attention import RNN_Attention
 # todo make the registry dynamic based on the file name
 
 reg = {
     'RNN_GRU': RNN_GRU,
     'CNN': CNN,
+    'RNN_Attention': RNN_Attention
 }
 
 
