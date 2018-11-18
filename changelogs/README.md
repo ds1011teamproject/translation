@@ -1,3 +1,9 @@
+### Version 0.6.5 - 11/17/2018
+Changes:
+- Added MAX_LENGTH support in IWSLT data loader
+    - required for attention implementation
+- Added NUM_TRAIN_SEND_TO_LOAD in IWSLT data loader, for testing training on a subset of data
+
 ### Version 0.6.4 - 11/16/2018
 Changes:
 - Added some small functionality to ModelManager
