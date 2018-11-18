@@ -58,9 +58,10 @@ class RNN_Attention(MTBaseModel):
             batch_size = src.size()[0]
             # encoding
             enc_out, hidden = self.encoder(src, slen)
-            enc_out = torch.cat((enc_out, torch.zeros((batch_size,
-                                                       self.hparams[hparamKey.MAX_LENGTH] - enc_out.size(1),
-                                                       enc_out.size(2)))), dim=1)
+            if enc_out.size(1) < self.hparams[hparamKey.MAX_LENGTH]:
+                enc_out = torch.cat((enc_out, torch.zeros((batch_size,
+                                                           self.hparams[hparamKey.MAX_LENGTH] - enc_out.size(1),
+                                                           enc_out.size(2))).to(DEVICE)), dim=1)
             # decoding
             dec_in = torch.LongTensor([iwslt.SOS_IDX] * batch_size).unsqueeze(1).to(DEVICE)
             teacher_forcing = True if random.random() < self.hparams[hparamKey.TEACHER_FORCING_RATIO] else False
@@ -91,9 +92,10 @@ class RNN_Attention(MTBaseModel):
         self.decoder.eval()
         # encoding
         enc_out, hidden = self.encoder(src, slen)
-        enc_out = torch.cat((enc_out, torch.zeros((1,
-                                                   self.hparams[hparamKey.MAX_LENGTH] - enc_out.size(1),
-                                                   enc_out.size(2)))), dim=1)
+        if enc_out.size(1) < self.hparams[hparamKey.MAX_LENGTH]:
+            enc_out = torch.cat((enc_out, torch.zeros((1,
+                                                       self.hparams[hparamKey.MAX_LENGTH] - enc_out.size(1),
+                                                       enc_out.size(2))).to(DEVICE)), dim=1)
         # decoding
         predicted = []
         dec_in = torch.LongTensor([iwslt.SOS_IDX]).unsqueeze(1).to(DEVICE)
@@ -137,9 +139,10 @@ class RNN_Attention(MTBaseModel):
                     batch_size = src.size()[0]
                     # encoding
                     enc_out, hidden = self.encoder(src, src_lens)
-                    enc_out = torch.cat((enc_out, torch.zeros((batch_size,
-                                                               self.hparams[hparamKey.MAX_LENGTH]-enc_out.size(1),
-                                                               enc_out.size(2)))), dim=1)
+                    if enc_out.size(1) < self.hparams[hparamKey.MAX_LENGTH]:
+                        enc_out = torch.cat((enc_out, torch.zeros((batch_size,
+                                                                   self.hparams[hparamKey.MAX_LENGTH] - enc_out.size(1),
+                                                                   enc_out.size(2))).to(DEVICE)), dim=1)
                     # decoding
                     dec_in = torch.LongTensor([iwslt.SOS_IDX] * batch_size).unsqueeze(1).to(DEVICE)
                     teacher_forcing = True if random.random() < self.hparams[hparamKey.TEACHER_FORCING_RATIO] else False
