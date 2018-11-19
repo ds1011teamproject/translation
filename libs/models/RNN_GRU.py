@@ -63,7 +63,7 @@ class RNN_GRU(MTBaseModel):
             for t in range(tgt.size(1)):  # seq_len axis
                 dec_out = self.decoder(dec_in, enc_last_hidden)
                 batch_loss += criterion(dec_out, tgt[:, t], reduction='sum',
-                                        ignore_index=iwslt.PAD_IDX)
+                                        ignore_index=iwslt.PAD_IDX).item()
                 # generate next dec_in
                 if teacher_forcing:
                     dec_in = tgt[:, t].unsqueeze(1)
