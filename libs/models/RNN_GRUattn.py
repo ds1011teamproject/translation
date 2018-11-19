@@ -58,7 +58,7 @@ class RNN_GRU(MTBaseModel):
             for t in range(tgt.size(1)):  # seq_len axis
                 dec_out = self.decoder(dec_in, enc_last_hidden)
                 batch_loss += F.nll_loss(dec_out, tgt[:, t], reduction='sum',
-                                         ignore_index=iwslt.PAD_IDX)
+                                         ignore_index=iwslt.PAD_IDX).item()
                 topv, topi = dec_out.topk(1)
                 dec_in = topi.detach()
             batch_loss /= tgt.data.gt(0).sum().float()

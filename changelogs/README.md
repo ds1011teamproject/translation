@@ -1,3 +1,8 @@
+### Version 0.6.6 - 11/18/2018
+Changes:
+- Minor improvements:
+    - Added .item() to the compute_loss fns for the RNN_GRU and RNN_GRUattn models to make memory consumption less intensive
+
 ### Version 0.6.5 - 11/17/2018
 Changes:
 - Added MAX_LENGTH support in IWSLT data loader
