@@ -24,7 +24,7 @@ class RNN_Attention(MTBaseModel):
     def __init__(self, hparams, lparams, cparams, label='gru-scratch', nolog=True):
         super().__init__(hparams, lparams, cparams, label, nolog)
         # encoder-decoder system
-        self.encoder = GRUAttention.Encoder(vocab_size=lparams[loaderKey.ACT_VOCAB_SIZE][SRC],  # source language vocab size
+        self.encoder = GRUAttention.Encoder(vocab_size=lparams[loaderKey.ACT_VOCAB_SIZE][SRC],  # src language voc_size
                                             emb_size=hparams[hparamKey.EMBEDDING_DIM],
                                             hidden_size=hparams[hparamKey.HIDDEN_SIZE],
                                             num_layers=hparams[hparamKey.ENC_NUM_LAYERS],
@@ -33,7 +33,7 @@ class RNN_Attention(MTBaseModel):
                                             trained_emb=lparams[loaderKey.TRAINED_EMB][SRC] if hparams[hparamKey.USE_FT_EMB] else None,
                                             freeze_emb=hparams[hparamKey.FREEZE_EMB] if hparams[hparamKey.USE_FT_EMB] else False
                                             ).to(DEVICE)
-        self.decoder = GRUAttention.Decoder(vocab_size=lparams[loaderKey.ACT_VOCAB_SIZE][TAR],  # target language vocab size
+        self.decoder = GRUAttention.Decoder(vocab_size=lparams[loaderKey.ACT_VOCAB_SIZE][TAR],  # tgt language voc_size
                                             emb_size=hparams[hparamKey.EMBEDDING_DIM],
                                             hidden_size=hparams[hparamKey.HIDDEN_SIZE],
                                             num_layers=hparams[hparamKey.DEC_NUM_LAYERS],
@@ -166,9 +166,8 @@ class RNN_Attention(MTBaseModel):
                     if i % self.hparams[hparamKey.TRAIN_LOOP_EVAL_FREQ] == 0:
                         # a) compute losses
                         # train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN], criterion)
-                        # val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL], criterion)
                         train_loss = batch_loss
-                        val_loss = -1  # no loss computed
+                        val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL], criterion)
                         # b) report
                         logger.info("(epoch){}/{} (step){}/{} (trainLoss){} (valLoss){} (lr)e:{}/d:{}".format(
                             self.cur_epoch, self.hparams[hparamKey.NUM_EPOCH],
@@ -176,6 +175,7 @@ class RNN_Attention(MTBaseModel):
                             train_loss, val_loss,
                             self.enc_optim.param_groups[0]['lr'], self.dec_optim.param_groups[0]['lr']))
                         self.eval_randomly(loader.loaders[DataSplitType.TRAIN], loader.id2token[iwslt.TAR])
+                        self.eval_randomly(loader.loaders[DataSplitType.VAL], loader.id2token[iwslt.TAR])
                         gc.collect()
                         # c) record current batch_loss
                         self.iter_curves[self.TRAIN_LOSS].append(train_loss)

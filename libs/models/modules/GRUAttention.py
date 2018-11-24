@@ -70,7 +70,7 @@ class Decoder(nn.Module):
         else:
             trained_emb = torch.from_numpy(trained_emb).float()
             self.embed = nn.Embedding.from_pretrained(trained_emb, freeze=freeze_emb)
-        # attention todo: add later
+        # attention
         self.attn = nn.Linear(self.hidden_size + self.emb_size, self.seq_length)
         self.attn_combine = nn.Linear(self.hidden_size + self.emb_size, self.hidden_size)
         # rnn layer
