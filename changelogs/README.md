@@ -1,3 +1,14 @@
+### Version 0.7.0 - 11/24/2018
+Changes:
+- refactor train loop and model structure
+    - all translation models share the same train loop, in TranslatorModel.py
+    - for each model, implement the decoding method:
+        - TRAIN mode: return batch_loss as a tensor, used in train()
+        - EVAL mode: return batch_loss as a float, used in compute_loss
+        - TRANSLATE mode: return predicted indices, an Int list
+    - *tested on NYU HPC
+- update demo script
+
 ### Version 0.6.6 - 11/18/2018
 Changes:
 - Minor improvements:
