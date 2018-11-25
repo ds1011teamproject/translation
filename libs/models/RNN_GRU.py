@@ -67,4 +67,6 @@ class RNN_GRU(MTBaseModel):
             return predicted
         else:
             batch_loss /= tgt_batch.data.gt(0).sum().float()
+            if mode == DecodeMode.EVAL:
+                batch_loss = batch_loss.item()
             return batch_loss

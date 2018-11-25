@@ -81,6 +81,7 @@ class MTBaseModel(BaseModel):
                     self.dec_optim.zero_grad()
                     # encoding
                     enc_results = self.encoder(src, src_lens)
+                    # enc_results: for simple GRU: encoder context vector, for GRU_attention: (enc_out, hidden)
                     # decoding
                     teacher_forcing = True if random.random() < self.hparams[HyperParamKey.TEACHER_FORCING_RATIO] else False
                     batch_loss = self.decoding(tgt, enc_results, teacher_forcing, mode=DecodeMode.TRAIN)
@@ -91,9 +92,9 @@ class MTBaseModel(BaseModel):
                     # report/save/early-stop
                     if i % self.hparams[HyperParamKey.TRAIN_LOOP_EVAL_FREQ] == 0:
                         # a) compute losses
-                        # train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN], criterion)
+                        # train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN])
                         train_loss = batch_loss
-                        val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL], self.criterion)
+                        val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL])
                         # b) report
                         logger.info("(epoch){}/{} (step){}/{} (trainLoss){} (valLoss){} (lr)e:{}/d:{}".format(
                             self.cur_epoch, self.hparams[HyperParamKey.NUM_EPOCH],
@@ -121,8 +122,8 @@ class MTBaseModel(BaseModel):
                             break
 
                 # eval per epoch
-                train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN], self.criterion)
-                val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL], self.criterion)
+                train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN])
+                val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL])
                 self.epoch_curves[self.TRAIN_LOSS].append(train_loss)
                 self.epoch_curves[self.VAL_LOSS].append(val_loss)
                 if self.cparams[ControlKey.SAVE_EACH_EPOCH]:
@@ -131,13 +132,13 @@ class MTBaseModel(BaseModel):
                     break
 
             # final loss evaluate:
-            train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN], self.criterion)
-            val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL], self.criterion)
+            train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN])
+            val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL])
             self.output_dict[OutputKey.FINAL_TRAIN_LOSS] = train_loss
             self.output_dict[OutputKey.FINAL_VAL_LOSS] = val_loss
             logger.info("training completed, results collected...")
 
-    def compute_loss(self, loader, criterion):
+    def compute_loss(self, loader):
         """
         This computation is very time-consuming, slows down the training.
         (?) Solution: a) use large check_interval (current)
