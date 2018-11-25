@@ -9,12 +9,23 @@ Notes:
 """
 import logging
 import torch
+import gc
+import random
+import numpy as np
 
 from libs.models.BaseModel import BaseModel
+import libs.data_loaders.IwsltLoader as iwslt
+from libs.data_loaders.IwsltLoader import SRC, TAR, DataSplitType
 from config.constants import (HyperParamKey, LoaderParamKey, ControlKey,
                               PathKey, StateKey, LoadingKey, OutputKey)
 
 logger = logging.getLogger('__main__')
+
+
+class DecodeMode:
+    TRAIN = 'train'
+    EVAL = 'eval'
+    TRANSLATE = 'translate'
 
 
 class MTBaseModel(BaseModel):
@@ -27,6 +38,7 @@ class MTBaseModel(BaseModel):
         self.dec_optim = None
         self.enc_scheduler = None
         self.dec_scheduler = None
+        self.criterion = None
 
         # todo: might add other metrics later
         self.iter_curves = {
@@ -44,10 +56,123 @@ class MTBaseModel(BaseModel):
         }
 
     def train(self, loader, tqdm_handler):
-        # todo: implement, if works for all nmt models; or to override in child model
-        # For saving train history (train/validation losses), please refer to
-        # the train loop in ClassifierModel.py
-        pass
+        if self.encoder is None or self.decoder is None:
+            logger.error("Model not properly initialized! Stopping training on model {}".format(self.label))
+        else:
+            # init optim/scheduler/criterion
+            self._init_optim_and_scheduler()
+            self.criterion = self.hparams[HyperParamKey.CRITERION]
+            early_stop = False
+            best_loss = np.Inf
+
+            for epoch in tqdm_handler(range(self.hparams[HyperParamKey.NUM_EPOCH] - self.cur_epoch)):
+                # lr_scheduler step
+                self.enc_scheduler.step(epoch=self.cur_epoch)
+                self.dec_scheduler.step(epoch=self.cur_epoch)
+                self.cur_epoch += 1
+                logger.info("stepped scheduler to epoch = {}".format(self.enc_scheduler.last_epoch + 1))
+
+                # mini-batch train
+                for i, (src, tgt, src_lens, _) in enumerate(loader.loaders[DataSplitType.TRAIN]):
+                    # tune to train mode
+                    self.encoder.train()
+                    self.decoder.train()
+                    self.enc_optim.zero_grad()
+                    self.dec_optim.zero_grad()
+                    # encoding
+                    enc_results = self.encoder(src, src_lens)
+                    # decoding
+                    teacher_forcing = True if random.random() < self.hparams[HyperParamKey.TEACHER_FORCING_RATIO] else False
+                    batch_loss = self.decoding(tgt, enc_results, teacher_forcing, mode=DecodeMode.TRAIN)
+                    # optimization step
+                    batch_loss.backward()
+                    self.enc_optim.step()
+                    self.dec_optim.step()
+                    # report/save/early-stop
+                    if i % self.hparams[HyperParamKey.TRAIN_LOOP_EVAL_FREQ] == 0:
+                        # a) compute losses
+                        # train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN], criterion)
+                        train_loss = batch_loss
+                        val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL], self.criterion)
+                        # b) report
+                        logger.info("(epoch){}/{} (step){}/{} (trainLoss){} (valLoss){} (lr)e:{}/d:{}".format(
+                            self.cur_epoch, self.hparams[HyperParamKey.NUM_EPOCH],
+                            i + 1, len(loader.loaders[DataSplitType.TRAIN]),
+                            train_loss, val_loss,
+                            self.enc_optim.param_groups[0]['lr'], self.dec_optim.param_groups[0]['lr']))
+                        self.eval_randomly(loader.loaders[DataSplitType.TRAIN], loader.id2token[iwslt.TAR])
+                        self.eval_randomly(loader.loaders[DataSplitType.VAL], loader.id2token[iwslt.TAR])
+                        gc.collect()
+                        # c) record current loss
+                        self.iter_curves[self.TRAIN_LOSS].append(train_loss)
+                        self.iter_curves[self.VAL_LOSS].append(val_loss)
+                        # d) save if best
+                        if val_loss < best_loss:
+                            # update output_dict
+                            self.output_dict[OutputKey.BEST_VAL_LOSS] = val_loss
+                            if self.cparams[ControlKey.SAVE_BEST_MODEL]:
+                                self.save(fn=self.BEST_FN)
+                            best_loss = val_loss
+                        # e) check early-stop
+                        if self.hparams[HyperParamKey.CHECK_EARLY_STOP]:
+                            early_stop = self.check_early_stop()
+                        if early_stop:
+                            logger.info("--- stopping training due to early stop ---")
+                            break
+
+                # eval per epoch
+                train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN], self.criterion)
+                val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL], self.criterion)
+                self.epoch_curves[self.TRAIN_LOSS].append(train_loss)
+                self.epoch_curves[self.VAL_LOSS].append(val_loss)
+                if self.cparams[ControlKey.SAVE_EACH_EPOCH]:
+                    self.save()
+                if early_stop:  # nested loop
+                    break
+
+            # final loss evaluate:
+            train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN], self.criterion)
+            val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL], self.criterion)
+            self.output_dict[OutputKey.FINAL_TRAIN_LOSS] = train_loss
+            self.output_dict[OutputKey.FINAL_VAL_LOSS] = val_loss
+            logger.info("training completed, results collected...")
+
+    def compute_loss(self, loader, criterion):
+        """
+        This computation is very time-consuming, slows down the training.
+        (?) Solution: a) use large check_interval (current)
+                      b) compute the loss on train/val loader only per epoch
+        """
+        self.encoder.eval()
+        self.decoder.eval()
+        loss = 0
+        for i, (src, tgt, slen, tlen) in enumerate(loader):
+            # encoding
+            enc_results = self.encoder(src, slen)
+            # decoding
+            teacher_forcing = True if random.random() < self.hparams[HyperParamKey.TEACHER_FORCING_RATIO] else False
+            batch_loss = self.decoding(tgt, enc_results, teacher_forcing, mode=DecodeMode.EVAL)
+            loss += batch_loss
+        # normalize
+        loss /= len(loader)
+        return loss
+
+    def eval_randomly(self, loader, id2token):
+        """Randomly translate a sentence from the given data loader"""
+        src, tgt, slen, _ = next(iter(loader))
+        idx = random.choice(range(len(src)))
+        src = src[idx].unsqueeze(0)
+        tgt = tgt[idx].unsqueeze(0)
+        slen = slen[idx].unsqueeze(0)
+        self.encoder.eval()
+        self.decoder.eval()
+        # encoding
+        enc_results = self.encoder(src, slen)
+        # decoding
+        predicted = self.decoding(tgt, enc_results, teacher_forcing=False, mode=DecodeMode.TRANSLATE)
+        target = " ".join([id2token[e.item()] for e in tgt.squeeze() if e.item() != iwslt.PAD_IDX])
+        translated = " ".join([id2token[e] for e in predicted])
+        logger.info("Translate randomly selected sentence:\nTruth:{}\nPredicted:{}".format(target, translated))
 
     def save(self, fn=BaseModel.CHECKPOINT_FN):
         state = {
@@ -129,4 +254,8 @@ class MTBaseModel(BaseModel):
         return False
 
     def eval_model(self, dataloader):
-        pass
+        # todo: implement BLEU
+        raise Exception("[eval_model] should be override!")
+
+    def decoding(self, tgt_batch, enc_results, teacher_forcing, mode):
+        raise Exception("[decoding] should be override!")
