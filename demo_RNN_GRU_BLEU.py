@@ -40,7 +40,7 @@ hparam_new = {
 # Train new model
 mgr = mm.ModelManager(hparams=hparam_new, control_overrides=config_new)
 mgr.load_data(mm.loaderRegister.IWSLT)
-# mgr.new_model(mm.modelRegister.RNN_GRU, label='bleu_test')
+# mgr.new_model(mm.modelRegister.RNN_GRU, label='sort_test')
 # mgr.train()
 # logger.info("Demo RNN_GRU_BLEU report:\n{}".format(mgr.model.output_dict))
 
@@ -88,5 +88,5 @@ for src, tgt, slen, _ in tqdm(loader.loaders[DataSplitType.VAL]):
 scorer = BLEUScorer()
 assert(len(true) == len(pred))
 
-result = scorer.bleu(" ".join(true), " ".join(pred), score_only=False)
+result = scorer.bleu(true, [pred], score_only=False)
 print(result)

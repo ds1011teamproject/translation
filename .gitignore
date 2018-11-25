@@ -110,5 +110,5 @@ data/
 
 # Model Saves
 *.tar
-
+model_saves/
 

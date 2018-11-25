@@ -13,8 +13,8 @@ class BLEUScorer():
         """
         Calculate BLEU score using sacreblue
 
-        @param true: True translation
-        @param pred: Predicted translation
+        @param true: List of true translation sequences
+        @param pred: List of predicted translation sequences
         @param score: Return score only
 
         cf. https://github.com/mjpost/sacreBLEU
