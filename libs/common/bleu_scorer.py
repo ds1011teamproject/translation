@@ -9,7 +9,7 @@ class BLEUScorer():
     def __init__(self):
         pass
 
-    def bleu(self, true, pred, score=True):
+    def bleu(self, true, pred, score_only=True):
         """
         Calculate BLEU score using sacreblue
 
@@ -30,7 +30,7 @@ class BLEUScorer():
             tokenize=DEFAULT_TOKENIZER,
             use_effective_order=False,
         )
-        if score:
+        if score_only:
             return bleu.score
         else:
             return bleu
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     I'm fine thank you."""
     pred = """Hello, how are you?
     I'm fine thank you."""
-    print(scorer.bleu(true, pred, score=False))
+    print(scorer.bleu(true, pred, score_only=False))
     """
     BLEU(score=100.00000000000004,
     counts=[11, 10, 9, 8], totals=[11, 10, 9, 8],
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     I'm fine thank you."""
     pred = """Hi, how are you?
     I'm fine thanks."""
-    print(scorer.bleu(true, pred, score=False))
+    print(scorer.bleu(true, pred, score_only=False))
     """
     BLEU(score=59.00468726392806,
     counts=[8, 6, 5, 4], totals=[11, 10, 9, 8],
@@ -68,7 +68,7 @@ if __name__ == "__main__":
     I'm fine thank you."""
     pred = """Hi, what's up?
     Not much."""
-    print(scorer.bleu(true, pred, score=False))
+    print(scorer.bleu(true, pred, score_only=False))
     """
     BLEU(score=4.9323515694897075,
     counts=[3, 0, 0, 0], totals=[11, 10, 9, 8],
