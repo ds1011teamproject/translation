@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from libs.data_loaders import IwsltLoader
-from libs.models.modules import fasttext_loader
+# from libs.models.modules import fasttext_loader
 from libs.data_loaders.IwsltLoader import PAD_IDX
 
 

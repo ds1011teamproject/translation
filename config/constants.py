@@ -31,6 +31,8 @@ class HyperParamKey:
     CHECK_EARLY_STOP = 'check_early_stop'
     EARLY_STOP_LOOK_BACK = 'es_look_back'
     EARLY_STOP_REQ_PROG = 'es_req_prog'
+    NO_IMPROV_LOOK_BACK = 'ni_look_back'
+    NO_IMPROV_LR_DECAY = 'ni_lr_decay'
     OPTIMIZER = 'optim_method'
     ENC_WEIGHT_DECAY = 'enc_weight_decay'
     DEC_WEIGHT_DECAY = 'dec_weight_decay'

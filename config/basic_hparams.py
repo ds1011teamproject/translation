@@ -27,12 +27,14 @@ DEFAULT_HPARAMS = {
     HyperParamKey.BATCH_SIZE: 32,
     HyperParamKey.TRAIN_LOOP_EVAL_FREQ: 100,
     HyperParamKey.CHECK_EARLY_STOP: True,
-    HyperParamKey.EARLY_STOP_LOOK_BACK: 5,
+    HyperParamKey.EARLY_STOP_LOOK_BACK: 30,
     HyperParamKey.EARLY_STOP_REQ_PROG: 0.01,
+    HyperParamKey.NO_IMPROV_LOOK_BACK: 10,
+    HyperParamKey.NO_IMPROV_LR_DECAY: 0.5,
     HyperParamKey.OPTIMIZER: torch.optim.Adam,
     HyperParamKey.SCHEDULER: torch.optim.lr_scheduler.ExponentialLR,
     HyperParamKey.SCHEDULER_GAMMA: 0.95,
     HyperParamKey.CRITERION: torch.nn.functional.nll_loss,
     # testing implementation parameters
-    HyperParamKey.NUM_TRAIN_SENT_TO_LOAD: 1,  # -1 or None indicates to load everything
+    HyperParamKey.NUM_TRAIN_SENT_TO_LOAD: -1,  # -1 or None indicates to load everything
 }

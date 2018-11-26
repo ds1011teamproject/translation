@@ -1,3 +1,11 @@
+### Version 0.7.1 - 11/25/2018
+Changes:
+- Added early stop based on validation loss to training curve
+- Added LR halving to training curve
+- LR halving look back set to 10 iterations
+- Full early stop look back set to 30 iterations
+- Changed some default basic hparams
+
 ### Version 0.7.0 - 11/24/2018
 Changes:
 - refactor train loop and model structure
@@ -31,7 +39,7 @@ Changes:
 Changes:
 - refactor for memory concern:
     - rename some variables in encoder/decoder and train-loop
-    - ModelManager and child models don't keep trained-embeddings in memory, only ACT_VOC_SIZE
+    - ModelManager and child models don'NO_IMPROV_LOOK_BACKt keep trained-embeddings in memory, only ACT_VOC_SIZE
 - updated default hyperparameters: use large hidden dimension 
 
 ### Version 0.6.2 - 11/15/2018

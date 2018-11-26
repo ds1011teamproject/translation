@@ -26,6 +26,7 @@ class DecodeMode:
     TRAIN = 'train'
     EVAL = 'eval'
     TRANSLATE = 'translate'
+    TRANSLATE_BEAM = 'trans_beam'
 
 
 class MTBaseModel(BaseModel):
@@ -64,6 +65,7 @@ class MTBaseModel(BaseModel):
             self.criterion = self.hparams[HyperParamKey.CRITERION]
             early_stop = False
             best_loss = np.Inf
+            ni_buffer = 0  # buffer for no improvement LR decay
 
             for epoch in tqdm_handler(range(self.hparams[HyperParamKey.NUM_EPOCH] - self.cur_epoch)):
                 # lr_scheduler step
@@ -101,8 +103,8 @@ class MTBaseModel(BaseModel):
                             i + 1, len(loader.loaders[DataSplitType.TRAIN]),
                             train_loss, val_loss,
                             self.enc_optim.param_groups[0]['lr'], self.dec_optim.param_groups[0]['lr']))
-                        self.eval_randomly(loader.loaders[DataSplitType.TRAIN], loader.id2token[iwslt.TAR])
-                        self.eval_randomly(loader.loaders[DataSplitType.VAL], loader.id2token[iwslt.TAR])
+                        self.eval_randomly(loader.loaders[DataSplitType.TRAIN], loader.id2token[iwslt.TAR], 'Train')
+                        self.eval_randomly(loader.loaders[DataSplitType.VAL], loader.id2token[iwslt.TAR], 'Val')
                         gc.collect()
                         # c) record current loss
                         self.iter_curves[self.TRAIN_LOSS].append(train_loss)
@@ -114,7 +116,11 @@ class MTBaseModel(BaseModel):
                             if self.cparams[ControlKey.SAVE_BEST_MODEL]:
                                 self.save(fn=self.BEST_FN)
                             best_loss = val_loss
-                        # e) check early-stop
+                        # e) check whether to decay the LR due to no-improvements seen in many steps
+                        ni_buffer = self.check_for_no_improvement_decay(ni_buffer)
+                        ni_buffer -= 1
+
+                        # f) check early-stop
                         if self.hparams[HyperParamKey.CHECK_EARLY_STOP]:
                             early_stop = self.check_early_stop()
                         if early_stop:
@@ -138,6 +144,41 @@ class MTBaseModel(BaseModel):
             self.output_dict[OutputKey.FINAL_VAL_LOSS] = val_loss
             logger.info("training completed, results collected...")
 
+    def check_for_no_improvement_decay(self, ni_buffer):
+        """
+        part of the training loop, check for whether we need to decay the learning rate due to no progress in a while
+        :param ni_buffer: the counter (towards 0) for the last improvement seen iteration
+        :return: ni_buffer, resets the buffer if we see improvement
+        """
+        no_improvement = self.check_no_improvement()
+        if no_improvement and self.hparams[HyperParamKey.NO_IMPROV_LR_DECAY] < 1.0 and ni_buffer <= 0:
+            # setting lr on the schedulers
+            for j, base_lr in enumerate(self.enc_scheduler.base_lrs):
+                self.enc_scheduler.base_lrs[j] = base_lr * self.hparams[HyperParamKey.NO_IMPROV_LR_DECAY]
+
+            for j, base_lr in enumerate(self.dec_scheduler.base_lrs):
+                self.dec_scheduler.base_lrs[j] = base_lr * self.hparams[HyperParamKey.NO_IMPROV_LR_DECAY]
+
+            # setting lr on the optimizers
+            for param_group, lr in zip(self.enc_scheduler.optimizer.param_groups, self.enc_scheduler.get_lr()):
+                param_group['lr'] = lr
+
+            for param_group, lr in zip(self.dec_scheduler.optimizer.param_groups, self.dec_scheduler.get_lr()):
+                param_group['lr'] = lr
+
+            logger.info('reducing encoder base_lr to %.5f since no improvement observed in %s steps' % (
+                self.enc_scheduler.base_lrs[0],
+                self.hparams[HyperParamKey.NO_IMPROV_LOOK_BACK]
+            ))
+
+            logger.info('reducing decoder base_lr to %.5f since no improvement observed in %s steps' % (
+                self.dec_scheduler.base_lrs[0],
+                self.hparams[HyperParamKey.NO_IMPROV_LOOK_BACK]
+            ))
+
+            ni_buffer = self.hparams[HyperParamKey.NO_IMPROV_LOOK_BACK]
+        return ni_buffer
+
     def compute_loss(self, loader):
         """
         This computation is very time-consuming, slows down the training.
@@ -158,7 +199,7 @@ class MTBaseModel(BaseModel):
         loss /= len(loader)
         return loss
 
-    def eval_randomly(self, loader, id2token):
+    def eval_randomly(self, loader, id2token, loader_label):
         """Randomly translate a sentence from the given data loader"""
         src, tgt, slen, _ = next(iter(loader))
         idx = random.choice(range(len(src)))
@@ -173,7 +214,7 @@ class MTBaseModel(BaseModel):
         predicted = self.decoding(tgt, enc_results, teacher_forcing=False, mode=DecodeMode.TRANSLATE)
         target = " ".join([id2token[e.item()] for e in tgt.squeeze() if e.item() != iwslt.PAD_IDX])
         translated = " ".join([id2token[e] for e in predicted])
-        logger.info("Translate randomly selected sentence:\nTruth:{}\nPredicted:{}".format(target, translated))
+        logger.info("Translate randomly from {}:\nTruth:{}\nPredicted:{}".format(loader_label, target, translated))
 
     def save(self, fn=BaseModel.CHECKPOINT_FN):
         state = {
@@ -246,10 +287,21 @@ class MTBaseModel(BaseModel):
     # Override following if needed #
     ################################
 
+    def check_no_improvement(self):
+        """ boolean of whether we did not improve in the last x interations, where x is a hparam """
+        val_loss_curve = self.iter_curves[self.VAL_LOSS]
+        t = self.hparams[HyperParamKey.NO_IMPROV_LOOK_BACK]
+
+        logger.info("Checking for no improvement, val loss history is %s" % str(val_loss_curve))
+        if len(val_loss_curve) >= t + 1 and min(val_loss_curve[-t:]) > val_loss_curve[-t - 1]:
+            return True
+        return False
+
     def check_early_stop(self):
         lookback = self.hparams[HyperParamKey.EARLY_STOP_LOOK_BACK]
         threshold = self.hparams[HyperParamKey.EARLY_STOP_REQ_PROG]
-        loss_hist = self.iter_curves[self.TRAIN_LOSS]
+        loss_hist = self.iter_curves[self.VAL_LOSS]
+        logger.info("Checking for early stop, val loss history is %s" % str(loss_hist))
         if len(loss_hist) > lookback + 1 and min(loss_hist[-lookback:]) > loss_hist[-lookback - 1] - threshold:
             return True
         return False
