@@ -4,25 +4,31 @@ RNN(GRU) with attention demo.
 
 import logging
 import sys
+import time
 
 from libs import ModelManager as mm
 from config import basic_conf as conf
 from config.constants import PathKey, HyperParamKey
 
 
-# logger
-conf.init_logger()
-logger = logging.getLogger('__main__')
-
-# ==== CHANGE YOUR DATA_PATH, MODEL_SAVES ====
+# ==== CHANGE YOUR LOG_FILE, DATA_PATH, MODEL_SAVES ====
 data_path = '/scratch/xl2053/nlp/'
-model_save = '/scratch/xl2053/nlp/translation/model_saves/'
+model_save = data_path + 'translation/model_saves/'
 if sys.platform == 'linux':  # hpc
     pass
 elif sys.platform == 'darwin':  # local test
     data_path = '/Users/xliu/Downloads/'
     model_save = 'model_saves/'
 
+# logger
+label = 'gruAttnFullTS8ep'
+ts = time.gmtime()
+conf.init_logger(loglevel=logging.INFO,
+                 logfile='{p}translation/logs/{lb}-{m}-{d}-{H}:{M}.log'.format(
+                     p=data_path, lb=label, m=ts[1], d=ts[2], H=ts[3], M=ts[4]))
+logger = logging.getLogger('__main__')
+
+# new config
 config_new = {
     PathKey.DATA_PATH: data_path,
     PathKey.INPUT_LANG: 'vi',
@@ -33,11 +39,10 @@ hparam_new = {
     HyperParamKey.EMBEDDING_DIM: 200,
     HyperParamKey.ENC_LR: 0.001,
     HyperParamKey.DEC_LR: 0.001,
-    HyperParamKey.SCHEDULER_GAMMA: 0.9,
-    HyperParamKey.NUM_EPOCH: 1,
+    HyperParamKey.NUM_EPOCH: 8,
     HyperParamKey.ENC_NUM_DIRECTIONS: 2,
     HyperParamKey.DEC_NUM_DIRECTIONS: 1,
-    HyperParamKey.BATCH_SIZE: 32,
+    HyperParamKey.BATCH_SIZE: 128,
     HyperParamKey.TRAIN_LOOP_EVAL_FREQ: 200,
     HyperParamKey.NUM_TRAIN_SENT_TO_LOAD: None,
     HyperParamKey.CHECK_EARLY_STOP: False,
