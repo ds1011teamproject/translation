@@ -10,7 +10,7 @@ from config import basic_conf as conf
 from config.constants import PathKey, HyperParamKey
 
 # logger
-conf.init_logger()
+conf.init_logger(logfile='rfbase.log')
 logger = logging.getLogger('__main__')
 
 # ==== CHANGE YOUR DATA_PATH, MODEL_SAVES ====
