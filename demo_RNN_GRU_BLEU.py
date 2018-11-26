@@ -15,7 +15,7 @@ from libs.data_loaders.IwsltLoader import DataSplitType
 
 
 # logger
-conf.init_logger(logging.INFO, logfile='bleu.log')
+conf.init_logger(logging.INFO, logfile='fasttext.log')
 logger = logging.getLogger('__main__')
 
 # ==== CHANGE YOUR DATA_PATH, MODEL_SAVES ====
@@ -33,20 +33,20 @@ hparam_new = {
     HyperParamKey.BATCH_SIZE: 32,
     HyperParamKey.TRAIN_LOOP_EVAL_FREQ: 200,
     HyperParamKey.CHECK_EARLY_STOP: False,
-    HyperParamKey.USE_FT_EMB: False,
+    HyperParamKey.USE_FT_EMB: True,
     HyperParamKey.NUM_TRAIN_SENT_TO_LOAD: None,
 }
 
 # Train new model
 mgr = mm.ModelManager(hparams=hparam_new, control_overrides=config_new)
 mgr.load_data(mm.loaderRegister.IWSLT)
-# mgr.new_model(mm.modelRegister.RNN_GRU, label='sort_test')
-# mgr.train()
-# logger.info("Demo RNN_GRU_BLEU report:\n{}".format(mgr.model.output_dict))
+mgr.new_model(mm.modelRegister.RNN_GRU, label='fasttext_test')
+mgr.train()
+logger.info("Demo RNN_GRU_BLEU report:\n{}".format(mgr.model.output_dict))
 
 # Load trained model
 mgr.model = None
-mgr.new_model(mm.modelRegister.RNN_GRU, label='bleu_test', nolog=True)
+mgr.new_model(mm.modelRegister.RNN_GRU, label='fasttext_test', nolog=True)
 mgr.load_model(which_model='checkpoint.tar')
 
 # Translate validation set

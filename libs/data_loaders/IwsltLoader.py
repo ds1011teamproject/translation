@@ -1,20 +1,26 @@
 """
 DataLoader for IWSLT data set.
 
-**NOTE**: the collate function automatically sorts by length of the source sentence!
+**NOTE**:
+The collate function automatically sorts by length of the source sentence!
 """
-import logging
-import numpy as np
-from torch.utils.data import DataLoader, Dataset
-from collections import Counter
-import pickle as pkl
-import torch
 
-from libs.data_loaders.BaseLoader import BaseLoader
+from collections import Counter
+import io
+import math
+import numpy as np
+import pickle as pkl
+import random
+
+import torch
+from torch.utils.data import DataLoader, Dataset
+
+from config.basic_conf import DEVICE
 from config.constants import (HyperParamKey as hparamKey, PathKey,
                               LoaderParamKey as loaderKey)
-from config.basic_conf import DEVICE
+from libs.data_loaders.BaseLoader import BaseLoader
 
+import logging
 logger = logging.getLogger('__main__')
 
 
@@ -51,14 +57,17 @@ class IwsltLoader(BaseLoader):
         self.token2id = {}
         self.id2token = {}
         self.trained_emb = {}
-        pass
 
     def load(self):
         self._load_raw_data()
         self._data_to_pipe()
-        results = {loaderKey.ACT_VOCAB_SIZE: {SRC: len(self.token2id[SRC]), TAR: len(self.token2id[TAR])}}
+        results = {loaderKey.ACT_VOCAB_SIZE: {
+            SRC: len(self.token2id[SRC]),
+            TAR: len(self.token2id[TAR])}}
         # if self.hparams[hparamKey.USE_FT_EMB]:
-        #     results[loaderKey.TRAINED_EMB] = {SRC: self.trained_emb[SRC], TAR: self.trained_emb[TAR]}
+        #     results[loaderKey.TRAINED_EMB] = {
+        #         SRC: self.trained_emb[SRC],
+        #         TAR: self.trained_emb[TAR]}
         return results
 
     def _load_raw_data(self):
@@ -67,50 +76,69 @@ class IwsltLoader(BaseLoader):
         Convert raw text from file into train/val/test data sets.
         """
         logger.info("Get source language datum list...")
-        data_path = self.cparams[PathKey.DATA_PATH] + 'iwslt-%s-en/' % self.cparams[PathKey.INPUT_LANG]
-        self.data[SRC] = load_datum_list(data_path=data_path,
-                                         lang=self.cparams[PathKey.INPUT_LANG],
-                                         num_to_load=self.hparams[hparamKey.NUM_TRAIN_SENT_TO_LOAD])
+        data_path = self.cparams[PathKey.DATA_PATH] + \
+            'iwslt-%s-en/' % self.cparams[PathKey.INPUT_LANG]
+        self.data[SRC] = load_datum_list(
+            data_path=data_path,
+            lang=self.cparams[PathKey.INPUT_LANG],
+            num_to_load=self.hparams[hparamKey.NUM_TRAIN_SENT_TO_LOAD])
         logger.info("Get target language datum list...")
-        self.data[TAR] = load_datum_list(data_path=data_path,
-                                         lang=self.cparams[PathKey.OUTPUT_LANG],
-                                         num_to_load=self.hparams[hparamKey.NUM_TRAIN_SENT_TO_LOAD])
+        self.data[TAR] = load_datum_list(
+            data_path=data_path,
+            lang=self.cparams[PathKey.OUTPUT_LANG],
+            num_to_load=self.hparams[hparamKey.NUM_TRAIN_SENT_TO_LOAD])
         # get language vocabulary
-        if self.hparams[hparamKey.USE_FT_EMB]:
-            ft_path = self.cparams[PathKey.DATA_PATH] + 'word_vectors/'
-            logger.info("Reading FastText embeddings from files ... building source vocab")
-            svocab = get_fasttext_embedding(ft_path, self.cparams[PathKey.INPUT_LANG], self.hparams[hparamKey.VOC_SIZE])
+        svocab_file = 'data/{}_voc{}.p'.format(self.cparams[PathKey.INPUT_LANG],
+                                               self.hparams[hparamKey.VOC_SIZE])
+        tvocab_file = 'data/{}_voc{}.p'.format(self.cparams[PathKey.OUTPUT_LANG],
+                                               self.hparams[hparamKey.VOC_SIZE])
+        try:
+            svocab = pkl.load(open(svocab_file, 'rb'))
+            tvocab = pkl.load(open(tvocab_file, 'rb'))
+            logger.info(
+                "Vocabulary found and loaded! (token2id, id2token, vocabs)")
+        except IOError:
+            logger.info(
+                "Building Vocabulary from train set ... building source vocab")
+            svocab = get_vocabulary(self.data[SRC][DataSplitType.TRAIN],
+                                    self.hparams[hparamKey.VOC_SIZE])
             logger.info("Building target vocab")
-            tvocab = get_fasttext_embedding(ft_path, self.cparams[PathKey.OUTPUT_LANG],
-                                            self.hparams[hparamKey.VOC_SIZE])
-        else:
-            svocab_file = 'data/{}_voc{}.p'.format(self.cparams[PathKey.INPUT_LANG],
-                                                   self.hparams[hparamKey.VOC_SIZE])
-            tvocab_file = 'data/{}_voc{}.p'.format(self.cparams[PathKey.OUTPUT_LANG],
-                                                   self.hparams[hparamKey.VOC_SIZE])
-            try:
-                svocab = pkl.load(open(svocab_file, 'rb'))
-                tvocab = pkl.load(open(tvocab_file, 'rb'))
-                logger.info("Vocabulary found and loaded! (token2id, id2token, vocabs)")
-            except IOError:
-                logger.info("Building Vocabulary from train set ... building source vocab")
-                svocab = get_vocabulary(self.data[SRC][DataSplitType.TRAIN],
-                                        self.hparams[hparamKey.VOC_SIZE])
-                logger.info("Building target vocab")
-                tvocab = get_vocabulary(self.data[TAR][DataSplitType.TRAIN],
-                                        self.hparams[hparamKey.VOC_SIZE])
-                # save to file
-                pkl.dump(svocab, open(svocab_file, 'wb'))
-                pkl.dump(tvocab, open(tvocab_file, 'wb'))
-                logger.info("Generated token2id, id2token for both src/target languages!")
+            tvocab = get_vocabulary(self.data[TAR][DataSplitType.TRAIN],
+                                    self.hparams[hparamKey.VOC_SIZE])
+            # save to file
+            pkl.dump(svocab, open(svocab_file, 'wb'))
+            pkl.dump(tvocab, open(tvocab_file, 'wb'))
+            logger.info(
+                "Generated token2id, id2token for both src/target languages!")
 
         # keep token2id, id2token in memory
         self.token2id[SRC] = svocab['token2id']
         self.token2id[TAR] = tvocab['token2id']
         self.id2token[SRC] = svocab['id2token']
         self.id2token[TAR] = tvocab['id2token']
-        self.trained_emb[SRC] = svocab.get('trained_emb', None)  # todo: reduce memory cost
-        self.trained_emb[TAR] = tvocab.get('trained_emb', None)
+
+        # Word embeddings
+        if self.hparams[hparamKey.USE_FT_EMB]:
+            logger.info("Loading fastText embeddings ...")
+            ft_path = self.cparams[PathKey.DATA_PATH] + 'word_vectors/'
+            logger.info("Loading source embeddings...")
+            self.trained_emb[SRC] = get_fasttext_embedding(
+                ft_path,
+                self.cparams[PathKey.INPUT_LANG],
+                svocab['id2token'],
+                self.hparams[hparamKey.EMBEDDING_DIM],
+            )
+            logger.info("Loading target embeddings...")
+            self.trained_emb[TAR] = get_fasttext_embedding(
+                ft_path,
+                self.cparams[PathKey.OUTPUT_LANG],
+                tvocab['id2token'],
+                self.hparams[hparamKey.EMBEDDING_DIM],
+            )
+        else:
+            self.trained_emb[SRC] = None
+            self.trained_emb[TAR] = None
+
         # convert tokens to indices
         logger.info("Convert token to index for source language ...")
         self._update_datum_indices(self.token2id[SRC], mode=SRC)
@@ -123,7 +151,9 @@ class IwsltLoader(BaseLoader):
         for split in datum_sets:  # train, val, test
             for datum in datum_sets[split]:
                 datum.set_token_indices(
-                    [indexer[tok] if tok in indexer else UNK_IDX for tok in datum.tokens] + [EOS_IDX]
+                    [indexer[tok] if tok in indexer
+                     else UNK_IDX for tok in datum.tokens] +
+                    [EOS_IDX]
                 )  # add EOS at the end of the sentence
 
     def _data_to_pipe(self):
@@ -131,20 +161,25 @@ class IwsltLoader(BaseLoader):
         coverts the data objects to the torch.*.DataLoader pipes
         """
         logger.info("Loading raw data into the DataLoaders ...")
-        shuffle_dict = {DataSplitType.TRAIN: True, DataSplitType.VAL: False, DataSplitType.TEST: False}
+        shuffle_dict = {DataSplitType.TRAIN: False,
+                        DataSplitType.VAL: False, DataSplitType.TEST: False}
         assert self.data[SRC].keys() == self.data[TAR].keys(), \
-            "Source and Target data do not have the same keys! cannot construct DataLoaders"
+            "Source and Target data do not have the same keys!" \
+            + "cannot construct DataLoaders"
         for split in self.data[SRC].keys():  # train, val, test
             cur_ds = IWSLTDataset(self.data[SRC][split], self.data[TAR][split],
-                                  max_length=self.hparams[hparamKey.MAX_LENGTH])
-            self.loaders[split] = DataLoader(dataset=cur_ds,
-                                             batch_size=self.hparams[hparamKey.BATCH_SIZE],
-                                             collate_fn=self.iwslt_collate_func,
-                                             shuffle=shuffle_dict[split])
+                                  max_length=self.hparams[hparamKey.MAX_LENGTH],
+                                  batch_size=self.hparams[hparamKey.BATCH_SIZE])
+            self.loaders[split] = DataLoader(
+                dataset=cur_ds,
+                batch_size=self.hparams[hparamKey.BATCH_SIZE],
+                collate_fn=self.iwslt_collate_func,
+                shuffle=shuffle_dict[split])
 
     def iwslt_collate_func(self, batch):
         """
-        **NOTE**: the batch is automatically sorted by length of the source sentence!
+        **NOTE**:
+        The batch is automatically sorted by length of the source sentence!
         """
         s_list, t_list = [], []  # source list and target list of token indices
         s_len_list, t_len_list = [], []  # source and target list of lengths
@@ -191,24 +226,33 @@ class IWSLTDatum:
         self.raw_text = raw_text
         self.tokens = None
         self.token_indices = None
+        self.num_toks = 0
 
     def set_tokens(self, tokens):
         self.tokens = tokens
+        self.num_toks = len(tokens)
 
     def set_token_indices(self, indices):
         self.token_indices = indices
 
 
 class IWSLTDataset(Dataset):
-    def __init__(self, source_list, target_list, max_length):
+    def __init__(self, source_list, target_list, max_length, batch_size):
         assert len(source_list) == len(target_list), \
-            "Length of source and target is not the same! Cannot construct Dataset object"
+            "Length of source and target is not the same!" \
+            + " Cannot construct Dataset object"
+
+        # Prepare batch data (sort and group by sentence length)
+        source_list, target_list = prepare_batch_data(
+            source_list, target_list, batch_size)
+
         self.s_list = source_list
         self.t_list = target_list
         self.max_length = max_length
 
     def __len__(self):
-        return len(self.s_list)  # already asserted that the 2 lengths are the same (source/target)
+        # already asserted that the 2 lengths are the same (source/target)
+        return len(self.s_list)
 
     def __getitem__(self, idx):
         """Get indices vector for i-th IWSLT Datum
@@ -257,9 +301,49 @@ def raw_to_datumlist(data_path, language, data_split_type, num_to_load=None):
 
 
 def load_datum_list(data_path, lang, num_to_load=None):
-    return {DataSplitType.TRAIN: raw_to_datumlist(data_path, lang, DataSplitType.TRAIN, num_to_load),
-            DataSplitType.VAL: raw_to_datumlist(data_path, lang, DataSplitType.VAL, num_to_load),
-            DataSplitType.TEST: raw_to_datumlist(data_path, lang, DataSplitType.TEST, num_to_load)}
+    return {
+        DataSplitType.TRAIN: raw_to_datumlist(
+            data_path, lang, DataSplitType.TRAIN, num_to_load),
+        DataSplitType.VAL: raw_to_datumlist(
+            data_path, lang, DataSplitType.VAL, num_to_load),
+        DataSplitType.TEST: raw_to_datumlist(
+            data_path, lang, DataSplitType.TEST, num_to_load)}
+
+
+def prepare_batch_data(source_list, target_list, batch_size):
+    """
+    Prepare input data for batch processing:
+        - filter empty sentence pairs
+        - sort aligned IWSLTDatum() data by sentence length
+        - group sentences of similar length (based on batch size)
+        - shuffle even-sized groups
+    """
+    # Create aligned tuples of (source, target)
+    tup = list(zip(source_list, target_list))
+
+    # Filter empty sentences
+    tup = [pair for pair in tup if
+           ((pair[0].num_toks > 0) and (pair[1].num_toks > 0))]
+
+    # Sort tuples by number of tokens in source sentence
+    tup_sort = sorted(tup, key=lambda pair: pair[0].num_toks)
+
+    # Split data into evenly sized chunks
+    n = math.ceil(len(source_list) / batch_size)  # Round up
+    chunks = [tup_sort[i:i + n] for i in range(0, len(tup_sort), n)]
+
+    # Split chunks into even-sized chunks (shuffle) and last chunk (no shuffle)
+    even_chunks = chunks[:-1]
+    last_chunk = chunks[-1]
+    random.shuffle(even_chunks)  # Shuffle even chunks
+    chunks = even_chunks + [last_chunk]  # Merge chunks
+
+    # Flatten chunk sublists
+    flatten = [pair for chunk in chunks for pair in chunk]
+    # Unpack flat list of tuples
+    source_list, target_list = zip(*flatten)
+
+    return source_list, target_list
 
 
 def get_vocabulary(datum_list, vocab_size):
@@ -279,36 +363,31 @@ def get_vocabulary(datum_list, vocab_size):
             'id2token': vocab}
 
 
-def get_fasttext_embedding(data_path, language, vocab_size):
+def get_fasttext_embedding(data_path, language, id2token, emb_dim):
     """
-    Get pre-trained word embeddings
+    Load pre-trained word embeddings
     """
     ft_file = '{}cc.{}.300.vec'.format(data_path, language)
-    # read file and build vocabulary
-    loaded_embeddings_ft = np.zeros((vocab_size, 300))
-    words_ft = {PAD_TOKEN: PAD_IDX,
-                UNK_TOKEN: UNK_IDX,
-                SOS_TOKEN: SOS_IDX,
-                EOS_TOKEN: EOS_IDX}
-    idx2words_ft = [PAD_TOKEN, UNK_TOKEN, SOS_TOKEN, EOS_TOKEN]
-    # <pad> and <unk> vectors
-    loaded_embeddings_ft[PAD_IDX, :] = np.zeros((1, 300))
-    loaded_embeddings_ft[UNK_IDX, :] = np.random.rand(1, 300)
-    # <sos> and <eos>
-    loaded_embeddings_ft[SOS_IDX, :] = 0.5 * np.ones((1, 300))
-    loaded_embeddings_ft[EOS_IDX, :] = -0.5 * np.ones((1, 300))
-    start_idx = len(idx2words_ft)
-    with open(ft_file) as f:
-        # Each line in FastText pre-trained word vectors file:
-        # 0-index: word
-        # following: embedded vectors
-        for i, line in enumerate(f):
-            if i >= (vocab_size - start_idx):
-                break
-            s = line.split()
-            loaded_embeddings_ft[i + start_idx, :] = np.asarray(s[1:])
-            words_ft[s[0]] = i + start_idx
-            idx2words_ft.append(s[0])
-    return {'token2id': words_ft,
-            'id2token': idx2words_ft,
-            'trained_emb': loaded_embeddings_ft}
+
+    # Load fastText embeddings for vocabulary words
+    toks = set(id2token)
+    fin = io.open(
+        ft_file, "r", encoding="utf-8", newline="\n", errors="ignore")
+    n, d = map(int, fin.readline().split())
+    data = {}
+    for line in fin:
+        if line.split()[0] in toks:
+            tokens = line.rstrip().split(" ")
+            data[tokens[0]] = list(map(float, tokens[1:]))
+
+    # Initialize empty weights matrix
+    weights = np.zeros((len(toks), 300))
+    found = 0
+
+    for i, tok in enumerate(id2token):
+        try:
+            weights[i] = data[tok]
+            found += 1
+        except KeyError:
+            weights[i] = np.random.normal(scale=0.6, size=(emb_dim, ))
+    return weights
