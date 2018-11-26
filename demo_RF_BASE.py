@@ -14,8 +14,8 @@ conf.init_logger(logfile='rfbase.log')
 logger = logging.getLogger('__main__')
 
 # ==== CHANGE YOUR DATA_PATH, MODEL_SAVES ====
-data_path = 'data/'
-model_save = 'model_saves/'
+data_path = '/scratch/rf1316/data/'
+model_save = '/scratch/rf1316/model_saves/'
 
 config_new = {
     PathKey.DATA_PATH: data_path,
