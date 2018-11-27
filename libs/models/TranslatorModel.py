@@ -18,8 +18,10 @@ import libs.data_loaders.IwsltLoader as iwslt
 from libs.data_loaders.IwsltLoader import SRC, TAR, DataSplitType
 from config.constants import (HyperParamKey, LoaderParamKey, ControlKey,
                               PathKey, StateKey, LoadingKey, OutputKey)
+from libs.common.bleu_scorer import BLEUScorer
 
 logger = logging.getLogger('__main__')
+BLEUscorer = BLEUScorer()
 
 
 class DecodeMode:
@@ -307,8 +309,29 @@ class MTBaseModel(BaseModel):
         return False
 
     def eval_model(self, dataloader):
-        # todo: implement BLEU
-        raise Exception("[eval_model] should be override!")
+        true = []
+        pred = []
+        id2token = dataloader.id2token[iwslt.TAR]
+        with torch.no_grad():
+            for src, tgt, slen, _ in self.tqdm(dataloader.loaders[DataSplitType.VAL]):
+                for idx in range(len(src)):
+                    # get sample
+                    src_i = src[idx].unsqueeze(0)
+                    tgt_i = tgt[idx].unsqueeze(0)
+                    slen_i = tgt[idx].unsqueeze(0)
+                    # tune to eval mode
+                    self.encoder.eval()
+                    self.encoder.eval()
+                    # encoding
+                    enc_result = self.encoder(src_i, slen_i)
+                    # decoding
+                    predicted = self.decoding(tgt_i, enc_result, teacher_forcing=False, mode=DecodeMode.TRANSLATE)
+                    # convert to strings
+                    target = " ".join([id2token[e] for e in tgt_i.squeeze() if e != iwslt.PAD_IDX])
+                    translated = " ".join([id2token[e] for e in predicted])
+                    true.append(target)
+                    pred.append(translated)
+            return BLEUscorer.bleu(true, [pred], score_only=True)
 
     def decoding(self, tgt_batch, enc_results, teacher_forcing, mode):
         raise Exception("[decoding] should be override!")
