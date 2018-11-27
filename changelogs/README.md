@@ -1,3 +1,21 @@
+### Version 0.7.3 - 11/26/2018
+Changes:
+- Added BLEU score in TranslatorModel, eval_model method
+    - new keys in constant OutputKey
+    - new lists in iter_curves and epoch_curves
+    - *later to be used for early-stop (early-stop update required)
+
+To-do:
+- update model load method, init model with read-in hparam from checkpoint
+- update demo files with argparse
+- add grid-search demo 
+
+### Version 0.7.2 - 11/26/2018
+Changes:
+- Added beam search
+    - (more details...)
+- no_grad update
+
 ### Version 0.7.1 - 11/25/2018
 Changes:
 - Added early stop based on validation loss to training curve

@@ -9,7 +9,7 @@ from config import basic_conf as conf
 from config.constants import PathKey, HyperParamKey
 
 from libs import ModelManager as mm
-from libs.common.bleu_scorer import BLEUScorer
+from libs.common.BleuScorer import BLEUScorer
 import libs.data_loaders.IwsltLoader as iwslt
 from libs.data_loaders.IwsltLoader import DataSplitType
 

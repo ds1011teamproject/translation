@@ -21,7 +21,7 @@ elif sys.platform == 'darwin':  # local test
     model_save = 'model_saves/'
 
 # logger
-label = 'gruFullTS8ep'
+label = 'gruFullTSbleu'
 ts = time.gmtime()
 conf.init_logger(loglevel=logging.INFO,
                  logfile='{p}translation/logs/{lb}-{m}-{d}-{H}:{M}.log'.format(
@@ -39,13 +39,13 @@ hparam_new = {
     HyperParamKey.EMBEDDING_DIM: 200,
     HyperParamKey.ENC_LR: 0.001,
     HyperParamKey.DEC_LR: 0.001,
-    HyperParamKey.NUM_EPOCH: 8,
+    HyperParamKey.NUM_EPOCH: 1,
     HyperParamKey.ENC_NUM_DIRECTIONS: 2,
     HyperParamKey.DEC_NUM_DIRECTIONS: 1,
     HyperParamKey.BATCH_SIZE: 64,
     HyperParamKey.TRAIN_LOOP_EVAL_FREQ: 200,
     HyperParamKey.NUM_TRAIN_SENT_TO_LOAD: None,
-    HyperParamKey.CHECK_EARLY_STOP: False,
+    HyperParamKey.CHECK_EARLY_STOP: True,
     HyperParamKey.USE_FT_EMB: False,
     HyperParamKey.TEACHER_FORCING_RATIO: 1.0
 }

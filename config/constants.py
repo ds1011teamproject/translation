@@ -77,10 +77,12 @@ class LoadingKey:
 class OutputKey:
     BEST_VAL_ACC = 'best_val_acc'
     BEST_VAL_LOSS = 'best_val_loss'
+    BEST_VAL_BLEU = 'best_val_bleu'
     FINAL_VAL_ACC = 'final_val_acc'
     FINAL_VAL_LOSS = 'final_val_loss'
     FINAL_TRAIN_ACC = 'final_train_acc'
     FINAL_TRAIN_LOSS = 'final_train_loss'
+    FINAL_VAL_BLEU = 'final_val_bleu'
 
 
 # Reference: nltk.corpus.stopwords.fileids()
@@ -140,7 +142,3 @@ LogConfig = {
         }
     }
 }
-
-
-class FastText:
-    DATA_PATH = 'data/wiki-news-300d-1M.vec'
