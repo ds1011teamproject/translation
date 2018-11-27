@@ -5,6 +5,7 @@ RNN(GRU) model demo
 import logging
 from tqdm import tqdm
 
+import libs.common.utils
 from config import basic_conf as conf
 from config.constants import PathKey, HyperParamKey
 
@@ -15,7 +16,7 @@ from libs.data_loaders.IwsltLoader import DataSplitType
 
 
 # logger
-conf.init_logger(logging.INFO, logfile='fasttext.log')
+libs.common.utils.init_logger(logging.INFO, logfile='fasttext.log')
 logger = logging.getLogger('__main__')
 
 # ==== CHANGE YOUR DATA_PATH, MODEL_SAVES ====
