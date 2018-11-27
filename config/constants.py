@@ -28,6 +28,7 @@ class HyperParamKey:
     NUM_EPOCH = 'num_epochs'
     TRAIN_LOOP_EVAL_FREQ = 'train_loop_check_freq'
     TEACHER_FORCING_RATIO = 'teacher_forcing_ratio'
+    BEAM_SEARCH_WIDTH = 'beam_search_width'
     CHECK_EARLY_STOP = 'check_early_stop'
     EARLY_STOP_LOOK_BACK = 'es_look_back'
     EARLY_STOP_REQ_PROG = 'es_req_prog'

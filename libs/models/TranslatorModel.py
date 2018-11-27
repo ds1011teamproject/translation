@@ -211,7 +211,7 @@ class MTBaseModel(BaseModel):
         # encoding
         enc_results = self.encoder(src, slen)
         # decoding
-        predicted = self.decoding(tgt, enc_results, teacher_forcing=False, mode=DecodeMode.TRANSLATE)
+        predicted = self.decoding(tgt, enc_results, teacher_forcing=False, mode=DecodeMode.TRANSLATE_BEAM)[0]
         target = " ".join([id2token[e.item()] for e in tgt.squeeze() if e.item() != iwslt.PAD_IDX])
         translated = " ".join([id2token[e] for e in predicted])
         logger.info("Translate randomly from {}:\nTruth:{}\nPredicted:{}".format(loader_label, target, translated))
