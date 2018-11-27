@@ -48,9 +48,10 @@ class RNN_GRU(MTBaseModel):
         # decoding - beamsearch
         if mode == DecodeMode.TRANSLATE_BEAM:
             # implement beam search here
-            predicted = beam_search(dec_in, enc_results, self.decoder, tgt_batch.size(1),
-                                    self.hparams[HyperParamKey.BEAM_SEARCH_WIDTH])
-            return predicted
+            with torch.no_grad():
+                predicted = beam_search(dec_in, enc_results, self.decoder, tgt_batch.size(1),
+                                        self.hparams[HyperParamKey.BEAM_SEARCH_WIDTH])
+                return predicted
         else:
             # decoding - regular
             for t in range(tgt_batch.size(1)):
