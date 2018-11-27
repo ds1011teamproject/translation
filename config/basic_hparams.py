@@ -21,6 +21,7 @@ DEFAULT_HPARAMS = {
     HyperParamKey.MAX_LENGTH: 100,
     # train
     HyperParamKey.TEACHER_FORCING_RATIO: 1.0,  # full teacher forcing
+    HyperParamKey.BEAM_SEARCH_WIDTH: 3,
     HyperParamKey.NUM_EPOCH: 100,
     HyperParamKey.ENC_LR: 0.01,
     HyperParamKey.DEC_LR: 0.01,
@@ -29,7 +30,7 @@ DEFAULT_HPARAMS = {
     HyperParamKey.CHECK_EARLY_STOP: True,
     HyperParamKey.EARLY_STOP_LOOK_BACK: 30,
     HyperParamKey.EARLY_STOP_REQ_PROG: 0.01,
-    HyperParamKey.NO_IMPROV_LOOK_BACK: 10,
+    HyperParamKey.NO_IMPROV_LOOK_BACK: 20,
     HyperParamKey.NO_IMPROV_LR_DECAY: 0.5,
     HyperParamKey.OPTIMIZER: torch.optim.Adam,
     HyperParamKey.SCHEDULER: torch.optim.lr_scheduler.ExponentialLR,

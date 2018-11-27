@@ -14,8 +14,8 @@ conf.init_logger(logfile='rfbase.log')
 logger = logging.getLogger('__main__')
 
 # ==== CHANGE YOUR DATA_PATH, MODEL_SAVES ====
-data_path = '/scratch/rf1316/data/'
-model_save = '/scratch/rf1316/model_saves/'
+data_path = 'data/'
+model_save = 'model_saves/'
 
 config_new = {
     PathKey.DATA_PATH: data_path,
@@ -31,12 +31,12 @@ hparam_new = {
     HyperParamKey.NUM_EPOCH: 10,
     HyperParamKey.ENC_NUM_DIRECTIONS: 1,
     HyperParamKey.DEC_NUM_DIRECTIONS: 1,
-    HyperParamKey.BATCH_SIZE: 128,
+    HyperParamKey.BATCH_SIZE: 16,
     HyperParamKey.TRAIN_LOOP_EVAL_FREQ: 200,
     HyperParamKey.NUM_TRAIN_SENT_TO_LOAD: None,
     HyperParamKey.CHECK_EARLY_STOP: True,
     HyperParamKey.USE_FT_EMB: False,
-    HyperParamKey.TEACHER_FORCING_RATIO: 0.5
+    HyperParamKey.TEACHER_FORCING_RATIO: 0.0
 }
 
 # model manager
