@@ -2,6 +2,7 @@ class PathKey:
     DATA_PATH = 'data_path'
     INPUT_LANG = 'input_lang'
     OUTPUT_LANG = 'output_lang'
+    MODEL_TYPE = 'model_type'
     MODEL_SAVES = 'model_saves'
     MODEL_PATH = 'model_path'
 

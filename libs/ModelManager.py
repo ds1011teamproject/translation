@@ -3,21 +3,23 @@ Responsible for managing the initialization, training, saving and load of model_
 """
 import os
 import pandas as pd
+import torch
 import gc
-from libs.models import registry as mod_reg
-from libs.data_loaders import registry as load_reg
-from libs.models.registry import modelRegister
-from libs.data_loaders.registry import loaderRegister
-from config.basic_conf import DEVICE
 import matplotlib.pyplot as plt
-from config.constants import PathKey, LoadingKey, HyperParamKey, LoaderParamKey
-from config import basic_hparams
-from config import basic_conf as conf
 from tqdm import tqdm_notebook
 from tqdm import tqdm
 from string import punctuation
 import logging
 import pickle
+
+from libs.models import registry as mod_reg
+from libs.data_loaders import registry as load_reg
+from libs.models.registry import modelRegister
+from libs.data_loaders.registry import loaderRegister
+from config.basic_conf import DEVICE
+from config.constants import PathKey, LoadingKey, HyperParamKey, LoaderParamKey, StateKey
+from config import basic_hparams
+from config import basic_conf as conf
 from libs._version import __version__
 
 logger = logging.getLogger('__main__')
@@ -96,6 +98,7 @@ class ModelManager:
         cur_constructor = mod_reg.reg[model_name]
         model_path = os.path.join(self.cparams[PathKey.MODEL_SAVES], safe_label + os.sep)
         self.cparams[PathKey.MODEL_PATH] = model_path
+        self.cparams[PathKey.MODEL_TYPE] = model_name
         lparams = dict(); lparams.update(self.lparams)
         if self.hparams[HyperParamKey.USE_FT_EMB]:
             lparams[LoaderParamKey.TRAINED_EMB] = self.dataloader.trained_emb
@@ -110,13 +113,29 @@ class ModelManager:
         self.model.save(fn)
         self.model.save_meta(md_string)
 
-    def load_model(self, which_model=LoadingKey.LOAD_CHECKPOINT, path_to_model_ovrd=None):
+    def load_model(self, model_type, which_model=LoadingKey.LOAD_CHECKPOINT, path_to_model_ovrd=None):
         """
         loads a model from the cparams specification
         :param which_model: 'checkpoint' or 'best'
         :param path_to_model_ovrd: override path to file
         """
-        self.model.load(which_model=which_model, path_to_model_ovrd=path_to_model_ovrd)
+        if which_model == LoadingKey.LOAD_BEST:
+            path_to_model_ovrd += 'model_best.tar'
+        else:
+            path_to_model_ovrd += 'checkpoint.tar'
+        if torch.cuda.is_available():
+            loaded = torch.load(path_to_model_ovrd)
+        else:
+            loaded = torch.load(path_to_model_ovrd, map_location='cpu')  # for local test
+        # updata parameters
+        self.cparams = loaded[StateKey.CPARAMS]
+        self.hparams = loaded[StateKey.HPARAMS]
+        self.lparams = loaded[StateKey.LPARAMS]
+        print(type(loaded[StateKey.CPARAMS]))
+        # init
+        self.new_model(model_name=loaded[StateKey.CPARAMS].get(PathKey.MODEL_TYPE, model_type),
+                       label=loaded[StateKey.LABEL])
+        self.model.load(loaded)
 
     def train(self):
         """ continue to train the current model """

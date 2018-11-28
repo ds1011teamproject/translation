@@ -125,7 +125,7 @@ class BaseModel(ABC):
         pass
 
     @abstractmethod
-    def check_early_stop(self):
+    def check_early_stop(self, *args, **kwargs):
         """
         Set the flag of early-stopping in training process.
         :return: True/False
@@ -133,7 +133,7 @@ class BaseModel(ABC):
         pass
 
     @abstractmethod
-    def save(self):
+    def save(self, *args, **kwargs):
         """
         Save the model, optimizer(s), lr_scheduler(s) to checkpoint file.
         State dicts varies w.r.t. different types of problems.
@@ -141,7 +141,7 @@ class BaseModel(ABC):
         pass
 
     @abstractmethod
-    def load(self):
+    def load(self, *args, **kwargs):
         """
         Load the model, optimizer, lr_scheduler from checkpoints (inverse of save method)
         The state dicts varies w.r.t. problems and models.

@@ -183,20 +183,18 @@ class MTBaseModel(BaseModel):
 
         self._save_checkpoint(state, fn)
 
-    def load(self, which_model=LoadingKey.LOAD_CHECKPOINT, path_to_model_ovrd=None):
+    def load(self, loaded):
         """
         can load either the best model, the checkpoint or a specific path
-        :param which_model: 'checkpoint' or 'best'
-        :param path_to_model_ovrd: override path to file
         """
-        if path_to_model_ovrd is None:
-            if which_model == LoadingKey.LOAD_BEST:
-                path_to_model_ovrd = self.cparams[PathKey.MODEL_PATH] + self.BEST_FN
-            else:
-                path_to_model_ovrd = self.cparams[PathKey.MODEL_PATH] + self.CHECKPOINT_FN
-
-        logger.info("loading checkpoint at {}".format(path_to_model_ovrd))
-        loaded = torch.load(path_to_model_ovrd)
+        # if path_to_model_ovrd is None:
+        #     if which_model == LoadingKey.LOAD_BEST:
+        #         path_to_model_ovrd = self.cparams[PathKey.MODEL_PATH] + self.BEST_FN
+        #     else:
+        #         path_to_model_ovrd = self.cparams[PathKey.MODEL_PATH] + self.CHECKPOINT_FN
+        #
+        # logger.info("loading checkpoint at {}".format(path_to_model_ovrd))
+        # loaded = torch.load(path_to_model_ovrd)
         # todo: init model(enc/dec) after reading hparams from checkpoint
 
         # load encoder/decoder
@@ -235,7 +233,7 @@ class MTBaseModel(BaseModel):
     ################################
     # Override following if needed #
     ################################
-    def decoding(self, tgt_batch, enc_results, teacher_forcing, mode):
+    def decoding(self, *args, **kwargs):
         raise Exception("[decoding] should be override!")
 
     def check_for_no_improvement_decay(self, ni_buffer):
@@ -292,11 +290,14 @@ class MTBaseModel(BaseModel):
             return True
         return False
 
-    def eval_model(self, dataloader):
+    def eval_model(self, dataloader, score_only=True, use_beam=False, beam_width=3):
         """
         Evaluate model by computing BLEU score on validation set.
         :param dataloader: dataloader from model-manager
-        :return: BLEU score, float number
+        :param score_only: if True, only return BLEU score (float)
+        :param use_beam: if True, use beam-search for translation
+        :param beam_width: search width for each step
+        :return: BLEU result, a float if score_only, else a BLEU score class
         """
         true = []
         pred = []
@@ -314,13 +315,17 @@ class MTBaseModel(BaseModel):
                     # encoding
                     enc_result = self.encoder(src_i, slen_i)
                     # decoding
-                    predicted = self.decoding(tgt_i, enc_result, teacher_forcing=False, mode=DecodeMode.TRANSLATE_BEAM)[0]
+                    if use_beam:
+                        predicted = self.decoding(tgt_i, enc_result, teacher_forcing=False,
+                                                  mode=DecodeMode.TRANSLATE_BEAM, beam_width=beam_width)[0]
+                    else:
+                        predicted = self.decoding(tgt_i, enc_result, False, mode=DecodeMode.TRANSLATE)
                     # convert to strings
                     target = " ".join([id2token[e] for e in tgt_i.squeeze() if e != iwslt.PAD_IDX])
                     translated = " ".join([id2token[e] for e in predicted])
                     true.append(target)
                     pred.append(translated)
-        return BLEUscorer.bleu(true, [pred], score_only=True)
+        return BLEUscorer.bleu(true, [pred], score_only=score_only)
 
     def compute_loss(self, loader):
         """
