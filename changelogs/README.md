@@ -1,3 +1,13 @@
+### Version 0.8.0 - 11/28/2018
+Changes:
+- major fix for rnn-encoder-decoder without
+    - fix GRU decoder structure, Ref: Cho 2014 arXiv:1406.1078v3 
+    - add init_hidden, using encoder context vector
+    - refactor RNN_GRU decoding method
+- simplified beam-search method, now compatible with RNN with/without attention
+- misc:
+    - get rid of tqdm (got error when early-stop triggered)
+
 ### Version 0.7.6 - 11/27/2018
 Changes:
 - switch to use BLEU for early stop
