@@ -99,7 +99,8 @@ class ModelManager:
         model_path = os.path.join(self.cparams[PathKey.MODEL_SAVES], safe_label + os.sep)
         self.cparams[PathKey.MODEL_PATH] = model_path
         self.cparams[PathKey.MODEL_TYPE] = model_name
-        lparams = dict(); lparams.update(self.lparams)
+        lparams = dict()
+        lparams.update(self.lparams)
         if self.hparams[HyperParamKey.USE_FT_EMB]:
             lparams[LoaderParamKey.TRAINED_EMB] = self.dataloader.trained_emb
         self.model = cur_constructor(self.hparams, lparams, self.cparams, safe_label, nolog=nolog)
@@ -116,6 +117,7 @@ class ModelManager:
     def load_model(self, model_type, which_model=LoadingKey.LOAD_CHECKPOINT, path_to_model_ovrd=None):
         """
         loads a model from the cparams specification
+        :param model_type: type of translation model, must be one from model registry
         :param which_model: 'checkpoint' or 'best'
         :param path_to_model_ovrd: override path to file
         """

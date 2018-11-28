@@ -19,24 +19,26 @@ class RNN_GRU(MTBaseModel):
     def __init__(self, hparams, lparams, cparams, label='gru-scratch', nolog=True):
         super().__init__(hparams, lparams, cparams, label, nolog)
         # encoder-decoder system
-        self.encoder = GRU.Encoder(vocab_size=lparams[LoaderParamKey.ACT_VOCAB_SIZE][iwslt.SRC],
-                                   emb_size=hparams[HyperParamKey.EMBEDDING_DIM],
-                                   hidden_size=hparams[HyperParamKey.HIDDEN_SIZE],
-                                   num_layers=hparams[HyperParamKey.ENC_NUM_LAYERS],
-                                   num_directions=hparams[HyperParamKey.ENC_NUM_DIRECTIONS],
-                                   dropout_prob=hparams.get(HyperParamKey.ENC_DROPOUT, 0.0),
-                                   trained_emb=lparams[LoaderParamKey.TRAINED_EMB][iwslt.SRC] if hparams[HyperParamKey.USE_FT_EMB] else None,
-                                   freeze_emb=hparams[HyperParamKey.FREEZE_EMB] if hparams[HyperParamKey.USE_FT_EMB] else False
-                                   ).to(DEVICE)
-        self.decoder = GRU.Decoder(vocab_size=lparams[LoaderParamKey.ACT_VOCAB_SIZE][iwslt.TAR],
-                                   emb_size=hparams[HyperParamKey.EMBEDDING_DIM],
-                                   hidden_size=hparams[HyperParamKey.HIDDEN_SIZE],
-                                   num_layers=hparams[HyperParamKey.DEC_NUM_LAYERS],
-                                   num_directions=hparams[HyperParamKey.DEC_NUM_DIRECTIONS],
-                                   dropout_prob=hparams.get(HyperParamKey.DEC_DROPOUT, 0.0),
-                                   trained_emb=lparams[LoaderParamKey.TRAINED_EMB][iwslt.TAR] if hparams[HyperParamKey.USE_FT_EMB] else None,
-                                   freeze_emb=hparams[HyperParamKey.FREEZE_EMB] if hparams[HyperParamKey.USE_FT_EMB] else False
-                                   ).to(DEVICE)
+        self.encoder = GRU.Encoder(
+            vocab_size=lparams[LoaderParamKey.ACT_VOCAB_SIZE][iwslt.SRC],
+            emb_size=hparams[HyperParamKey.EMBEDDING_DIM],
+            hidden_size=hparams[HyperParamKey.HIDDEN_SIZE],
+            num_layers=hparams[HyperParamKey.ENC_NUM_LAYERS],
+            num_directions=hparams[HyperParamKey.ENC_NUM_DIRECTIONS],
+            dropout_prob=hparams.get(HyperParamKey.ENC_DROPOUT, 0.0),
+            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][iwslt.SRC] if hparams[HyperParamKey.USE_FT_EMB] else None,
+            freeze_emb=hparams[HyperParamKey.FREEZE_EMB] if hparams[HyperParamKey.USE_FT_EMB] else False
+        ).to(DEVICE)
+        self.decoder = GRU.Decoder(
+            vocab_size=lparams[LoaderParamKey.ACT_VOCAB_SIZE][iwslt.TAR],
+            emb_size=hparams[HyperParamKey.EMBEDDING_DIM],
+            hidden_size=hparams[HyperParamKey.HIDDEN_SIZE],
+            num_layers=hparams[HyperParamKey.DEC_NUM_LAYERS],
+            num_directions=hparams[HyperParamKey.DEC_NUM_DIRECTIONS],
+            dropout_prob=hparams.get(HyperParamKey.DEC_DROPOUT, 0.0),
+            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][iwslt.TAR] if hparams[HyperParamKey.USE_FT_EMB] else None,
+            freeze_emb=hparams[HyperParamKey.FREEZE_EMB] if hparams[HyperParamKey.USE_FT_EMB] else False
+        ).to(DEVICE)
 
     def decoding(self, tgt_batch, enc_results, teacher_forcing, mode, beam_width=3):
         # init

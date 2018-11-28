@@ -8,7 +8,7 @@ Notes:
 
 """
 from abc import ABC, abstractmethod
-from config.constants import HyperParamKey, ControlKey, StateKey, PathKey, LoaderParamKey, OutputKey
+from config.constants import HyperParamKey, PathKey, LoaderParamKey
 import logging
 import torch
 import time
@@ -77,9 +77,8 @@ class BaseModel(ABC):
     def add_epochs(self, num_added):
         self.hparams[HyperParamKey.NUM_EPOCH] += num_added
         logger.info("added %s to required epochs count. \n"
-                    "cur epoch=%s, required epochs=%s" % (num_added
-                                                          , self.cur_epoch
-                                                          , self.hparams[HyperParamKey.NUM_EPOCH]))
+                    "cur epoch=%s, required epochs=%s" % (
+                        num_added, self.cur_epoch, self.hparams[HyperParamKey.NUM_EPOCH]))
 
     def _save_checkpoint(self, state, filename):
         start_time = time.time()

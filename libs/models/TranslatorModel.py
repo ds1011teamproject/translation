@@ -194,19 +194,6 @@ class MTBaseModel(BaseModel):
         self._save_checkpoint(state, fn)
 
     def load(self, loaded):
-        """
-        can load either the best model, the checkpoint or a specific path
-        """
-        # if path_to_model_ovrd is None:
-        #     if which_model == LoadingKey.LOAD_BEST:
-        #         path_to_model_ovrd = self.cparams[PathKey.MODEL_PATH] + self.BEST_FN
-        #     else:
-        #         path_to_model_ovrd = self.cparams[PathKey.MODEL_PATH] + self.CHECKPOINT_FN
-        #
-        # logger.info("loading checkpoint at {}".format(path_to_model_ovrd))
-        # loaded = torch.load(path_to_model_ovrd)
-        # todo: init model(enc/dec) after reading hparams from checkpoint
-
         # load encoder/decoder
         self.encoder.load_state_dict(loaded[StateKey.MODEL_STATE]['encoder'])
         self.decoder.load_state_dict(loaded[StateKey.MODEL_STATE]['decoder'])

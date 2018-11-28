@@ -4,7 +4,7 @@ from sacrebleu import (
 )
 
 
-class BLEUScorer():
+class BLEUScorer:
 
     def __init__(self):
         pass
@@ -15,7 +15,7 @@ class BLEUScorer():
 
         @param true: List of true translation sequences
         @param pred: List of predicted translation sequences
-        @param score: Return score only
+        @param score_only: Return score only
 
         cf. https://github.com/mjpost/sacreBLEU
         """

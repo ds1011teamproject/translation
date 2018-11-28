@@ -53,7 +53,7 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
     """
-    Machine Translation Decoder
+    RNN Decoder with Attention mechanism
     Gated recurrent unit (GRU)
     """
     def __init__(self, vocab_size, emb_size, hidden_size, num_layers, num_directions, seq_len,
@@ -89,18 +89,13 @@ class Decoder(nn.Module):
     def forward(self, dec_in, hidden, enc_outputs):
         # embedding
         dec_in = self.embed(dec_in)
-        # print("dec_in", dec_in.size())
-        # print("hidden", hidden.size())
         # attention
         attn = F.softmax(self.attn(torch.cat((dec_in, hidden.transpose(0, 1)), dim=2)), dim=-1)
-        # print("***\nattn_weights:", attn.size(), "enc_out:", enc_outputs.size(), "\n***")
         attn = torch.bmm(attn, enc_outputs)
-        # print("***\nembedded:", dec_in.size(), "attn:", attn.size(), "\n***")
 
         # compare y_hat(t-1) and context vector
         dec_in = torch.cat((dec_in, attn), dim=2)
         dec_in = self.attn_combine(dec_in)
-        # print("***\nafter attn_combine:", dec_in.size(), "\n***")
 
         # generate next hidden state and output
         dec_in = F.relu(dec_in)

@@ -83,16 +83,6 @@ class Decoder(nn.Module):
         self.out = nn.Linear(hidden_size, vocab_size)
         self.softmax = nn.LogSoftmax(dim=1)
 
-    # def forward(self, dec_in, hidden):
-    #     # embedding
-    #     dec_in = self.embed(dec_in)
-    #     dec_in = F.relu(dec_in)
-    #     # rnn
-    #     dec_in, _ = self.gru(dec_in, hidden)
-    #     dec_in = self.out(dec_in).squeeze(1)
-    #     dec_in = self.softmax(dec_in)   # logits
-    #     return dec_in
-
     # (Cho 2014) Learning Phrase Rep using RNN encoder-decoder for SMT
     def init_hidden(self, enc_out):
         hidden = self.init_linear(enc_out)

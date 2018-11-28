@@ -280,6 +280,7 @@ def raw_to_datumlist(data_path, language, data_split_type, num_to_load=None):
     :param data_path: path to find data file (tokenized iwslt data)
     :param language: data set language
     :param data_split_type: value of DataSplitType
+    :param num_to_load: number of train samples to load, use entire train data if None
     :return: list of IWSLTDatum
     """
     datum_list = []
