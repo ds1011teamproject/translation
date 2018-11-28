@@ -1,3 +1,14 @@
+### Version 0.7.4 - 11/27/2018
+Changes:
+- updated model load method (see details from v0.7.3 To-do)
+- updated demo files with argparse
+    - train a single model: demo_SingleModel.py
+    - evaluate BLEU on trained model (load and eval): demo_TrainedModelBLEU.py
+    - *instruction in doc string 
+- upgraded eval_model() method 
+    - compatible with both training and post-train evaluation
+- minor fix for beam_search
+
 ### Version 0.7.3 - 11/26/2018
 Changes:
 - Added BLEU score in TranslatorModel, eval_model method
