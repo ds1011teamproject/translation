@@ -123,13 +123,16 @@ class MTBaseModel(BaseModel):
                             # update output_dict
                             self.output_dict[OutputKey.BEST_VAL_LOSS] = val_loss
                             # save if needed
-                            if self.cparams[ControlKey.SAVE_BEST_MODEL]:
-                                self.save(fn=self.BEST_FN)
+                            # if self.cparams[ControlKey.SAVE_BEST_MODEL]:
+                            #     self.save(fn=self.BEST_FN)
                             # update current best
                             best_loss = val_loss
                         if val_bleu > best_bleu:
                             # update output
                             self.output_dict[OutputKey.BEST_VAL_BLEU] = val_bleu
+                            # save if needed
+                            if self.cparams[ControlKey.SAVE_BEST_MODEL]:
+                                self.save(fn=self.BEST_FN)
                             # update best
                             best_bleu = val_bleu
                         # e) check whether to decay the LR due to no-improvements seen in many steps
@@ -147,6 +150,13 @@ class MTBaseModel(BaseModel):
                 train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN])
                 val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL])
                 val_bleu = self.eval_model(loader)
+                if val_loss < best_loss:
+                    self.output_dict[OutputKey.BEST_VAL_LOSS] = val_loss
+                if val_bleu > best_bleu:
+                    self.output_dict[OutputKey.BEST_VAL_BLEU] = val_bleu
+                    if self.cparams[ControlKey.SAVE_BEST_MODEL]:
+                        self.save(fn=self.BEST_FN)
+                    best_bleu = val_bleu
                 self.epoch_curves[self.TRAIN_LOSS].append(train_loss)
                 self.epoch_curves[self.VAL_LOSS].append(val_loss)
                 self.epoch_curves[self.VAL_BLEU].append(val_bleu)
@@ -156,9 +166,9 @@ class MTBaseModel(BaseModel):
                     break
 
             # final loss evaluate:
-            train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN])
-            val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL])
-            val_bleu = self.eval_model(loader)
+            # train_loss = self.compute_loss(loader.loaders[DataSplitType.TRAIN])
+            # val_loss = self.compute_loss(loader.loaders[DataSplitType.VAL])
+            # val_bleu = self.eval_model(loader)
             self.output_dict[OutputKey.FINAL_TRAIN_LOSS] = train_loss
             self.output_dict[OutputKey.FINAL_VAL_LOSS] = val_loss
             self.output_dict[OutputKey.FINAL_VAL_BLEU] = val_bleu
@@ -281,13 +291,18 @@ class MTBaseModel(BaseModel):
             return True
         return False
 
-    def check_early_stop(self):
+    def check_early_stop(self, hist='bleu'):
         lookback = self.hparams[HyperParamKey.EARLY_STOP_LOOK_BACK]
         threshold = self.hparams[HyperParamKey.EARLY_STOP_REQ_PROG]
-        loss_hist = self.iter_curves[self.VAL_LOSS]
-        # logger.info("Checking for early stop, val loss history is %s" % str(loss_hist))
-        if len(loss_hist) > lookback + 1 and min(loss_hist[-lookback:]) > loss_hist[-lookback - 1] - threshold:
-            return True
+        if hist == 'loss':
+            loss_hist = self.iter_curves[self.VAL_LOSS]
+            # logger.info("Checking for early stop, val loss history is %s" % str(loss_hist))
+            if len(loss_hist) > lookback + 1 and min(loss_hist[-lookback:]) > loss_hist[-lookback - 1] - threshold:
+                return True
+        elif hist == 'bleu':
+            bleu_hist = self.iter_curves[self.VAL_BLEU]
+            if len(bleu_hist) > lookback + 1 and max(bleu_hist[-lookback:]) < bleu_hist[-lookback - 1] + threshold:
+                return True
         return False
 
     def eval_model(self, dataloader, score_only=True, use_beam=False, beam_width=3):

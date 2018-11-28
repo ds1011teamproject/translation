@@ -1,3 +1,8 @@
+### Version 0.7.6 - 11/27/2018
+Changes:
+- switch to use BLEU for early stop
+- delete outdated BLEU demo
+
 ### Version 0.7.5 - 11/27/2018
 Changes:
 - add beam search that works with attention
