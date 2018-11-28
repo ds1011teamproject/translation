@@ -1,3 +1,7 @@
+### Version 0.7.5 - 11/27/2018
+Changes:
+- add beam search that works with attention
+
 ### Version 0.7.4 - 11/27/2018
 Changes:
 - updated model load method (see details from v0.7.3 To-do)
