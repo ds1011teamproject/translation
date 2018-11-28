@@ -45,17 +45,19 @@ class RNN_GRU(MTBaseModel):
         predicted = []
         # first input
         dec_in = torch.LongTensor([iwslt.SOS_IDX] * batch_size).unsqueeze(1).to(DEVICE)
+        # first hidden
+        hidden = self.decoder.init_hidden(enc_results)
         # decoding - beamsearch
         if mode == DecodeMode.TRANSLATE_BEAM:
             # implement beam search here
             beam_width = self.hparams.get(HyperParamKey.BEAM_SEARCH_WIDTH, beam_width)
             with torch.no_grad():
-                predicted = beam_search(dec_in, enc_results, self.decoder, tgt_batch.size(1), beam_width)
+                predicted = beam_search(dec_in, hidden, enc_results, self.decoder, tgt_batch.size(1), beam_width)
                 return predicted
         else:
             # decoding - regular
             for t in range(tgt_batch.size(1)):
-                dec_in = self.decoder(dec_in, enc_results)
+                dec_in, hidden = self.decoder(dec_in, hidden, enc_results)
                 if mode == DecodeMode.TRAIN:
                     batch_loss += self.criterion(dec_in, tgt_batch[:, t],
                                                  reduction='sum', ignore_index=iwslt.PAD_IDX)

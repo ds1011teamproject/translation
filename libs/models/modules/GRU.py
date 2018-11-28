@@ -67,8 +67,12 @@ class Decoder(nn.Module):
         else:
             trained_emb = torch.from_numpy(trained_emb).float()
             self.embed = nn.Embedding.from_pretrained(trained_emb, freeze=freeze_emb)
+        # for init_hidden
+        self.init_linear = nn.Linear(hidden_size, hidden_size)
+        # for compare y_hat(t-1) and context vector
+        self.compare = nn.Linear(emb_size + hidden_size, hidden_size)
         self.gru = nn.GRU(
-            input_size=emb_size,
+            input_size=hidden_size,
             hidden_size=hidden_size,
             num_layers=num_layers,
             bias=True,
@@ -79,12 +83,31 @@ class Decoder(nn.Module):
         self.out = nn.Linear(hidden_size, vocab_size)
         self.softmax = nn.LogSoftmax(dim=1)
 
-    def forward(self, dec_in, hidden):
-        # embedding
+    # def forward(self, dec_in, hidden):
+    #     # embedding
+    #     dec_in = self.embed(dec_in)
+    #     dec_in = F.relu(dec_in)
+    #     # rnn
+    #     dec_in, _ = self.gru(dec_in, hidden)
+    #     dec_in = self.out(dec_in).squeeze(1)
+    #     dec_in = self.softmax(dec_in)   # logits
+    #     return dec_in
+
+    # (Cho 2014) Learning Phrase Rep using RNN encoder-decoder for SMT
+    def init_hidden(self, enc_out):
+        hidden = self.init_linear(enc_out)
+        return torch.tanh(hidden)
+
+    def forward(self, dec_in, hidden, enc_out):
         dec_in = self.embed(dec_in)
+
+        # compare y_hat(t-1) and context vector
+        dec_in = torch.cat((dec_in, enc_out.transpose(0, 1)), dim=2)
+        # dec_in: batch * 1 * (emb + hidden_size)
+        dec_in = self.compare(dec_in)
+        # batch_size * 1 * hidden_size
         dec_in = F.relu(dec_in)
-        # rnn
-        dec_in, _ = self.gru(dec_in, hidden)
+        dec_in, hidden = self.gru(dec_in, hidden)
         dec_in = self.out(dec_in).squeeze(1)
-        dec_in = self.softmax(dec_in)   # logits
-        return dec_in
+        dec_in = self.softmax(dec_in)  # logits
+        return dec_in, hidden

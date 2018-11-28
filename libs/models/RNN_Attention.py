@@ -6,7 +6,7 @@ import torch
 
 from libs.models.TranslatorModel import MTBaseModel, DecodeMode
 from libs.models.modules import GRUAttention
-from libs.common.BeamSearcher import beam_search_attn
+from libs.common.BeamSearcher import beam_search
 import libs.data_loaders.IwsltLoader as iwslt
 from config.constants import HyperParamKey, LoaderParamKey
 from config.basic_conf import DEVICE
@@ -57,7 +57,7 @@ class RNN_Attention(MTBaseModel):
             # implement beam search here
             beam_width = self.hparams.get(HyperParamKey.BEAM_SEARCH_WIDTH, beam_width)
             with torch.no_grad():
-                predicted = beam_search_attn(dec_in, hidden, enc_out, self.decoder, tgt_batch.size(1), beam_width)
+                predicted = beam_search(dec_in, hidden, enc_out, self.decoder, tgt_batch.size(1), beam_width)
                 return predicted
         else:
             # decoding
