@@ -73,4 +73,5 @@ mgr = mm.ModelManager(hparams=hparam_new, control_overrides=config_new)
 mgr.load_data(mm.loaderRegister.IWSLT)
 mgr.new_model(args.model_type, label=args.model_label)
 mgr.train()
-logger.info("Demo RNN_GRU report:\n{}".format(mgr.model.output_dict))
+logger.info("Train complete!\nModel {} {} training report:\n{}".format(
+    args.model_type, args.model_label, mgr.model.output_dict))
