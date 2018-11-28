@@ -108,7 +108,7 @@ class BaseModel(ABC):
         pass
 
     @abstractmethod
-    def train(self, dataloader, tqdm_handler):
+    def train(self, dataloader):
         """
         Train loop varies with different types of problems.
         e.g. classification, inference, machine translation, etc.

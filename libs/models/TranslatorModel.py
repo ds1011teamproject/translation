@@ -62,7 +62,7 @@ class MTBaseModel(BaseModel):
             self.VAL_BLEU: []
         }
 
-    def train(self, loader, tqdm_handler):
+    def train(self, loader):
         if self.encoder is None or self.decoder is None:
             logger.error("Model not properly initialized! Stopping training on model {}".format(self.label))
         else:
@@ -74,7 +74,7 @@ class MTBaseModel(BaseModel):
             best_bleu = 0
             ni_buffer = 0  # buffer for no improvement LR decay
 
-            for epoch in tqdm_handler(range(self.hparams[HyperParamKey.NUM_EPOCH] - self.cur_epoch)):
+            for epoch in range(self.hparams[HyperParamKey.NUM_EPOCH] - self.cur_epoch):
                 # lr_scheduler step
                 self.enc_scheduler.step(epoch=self.cur_epoch)
                 self.dec_scheduler.step(epoch=self.cur_epoch)

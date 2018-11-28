@@ -79,7 +79,7 @@ class ModelManager:
         :param loader_name: name that should appear in the loader registry libs.data_loaders.registry.reg
         """
         logger.info("Loading data using %s ..." % loader_name)
-        self.dataloader = load_reg.reg[loader_name](self.cparams, self.hparams, self.tqdm)
+        self.dataloader = load_reg.reg[loader_name](self.cparams, self.hparams)
         # the load routine should return a dict of parameters that models need to init
         self.lparams = self.dataloader.load()
 
@@ -139,7 +139,7 @@ class ModelManager:
 
     def train(self):
         """ continue to train the current model """
-        self.model.train(self.dataloader, self.tqdm)
+        self.model.train(self.dataloader)
         self.results.append(self.model.output_dict)
 
         # at each step pickle the intermediate results

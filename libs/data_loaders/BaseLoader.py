@@ -8,9 +8,9 @@ from abc import ABC, abstractmethod
 
 
 class BaseLoader(ABC):
-    def __init__(self, cparams, hparams, tqdm):
+    def __init__(self, cparams, hparams):
         super().__init__()
-        self.tqdm = tqdm            # tqdm handler that depends on console or notebook mode
+        # self.tqdm = tqdm            # tqdm handler that depends on console or notebook mode
         self.cparams = cparams      # cparams passed down from the ModelManager
         self.hparams = hparams      # hparams passed down from the ModelManager
         self.data = {}              # for storing raw data

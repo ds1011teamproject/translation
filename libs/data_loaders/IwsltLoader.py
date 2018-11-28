@@ -52,8 +52,8 @@ class DataSplitType:
 # IWSLT Classes #
 #################
 class IwsltLoader(BaseLoader):
-    def __init__(self, cparams, hparams, tqdm):
-        super().__init__(cparams, hparams, tqdm)
+    def __init__(self, cparams, hparams):
+        super().__init__(cparams, hparams)
         self.token2id = {}
         self.id2token = {}
         self.trained_emb = {}
