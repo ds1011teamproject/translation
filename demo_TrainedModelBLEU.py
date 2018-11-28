@@ -43,8 +43,8 @@ parser.add_argument('-w', '--width', dest='beam_width',
 args = parser.parse_args()
 
 # logger
-libs.common.utils.init_logger(logfile='{}evalBLEU-{}.log'.format(
-    args.ckp_path, time.strftime("%m-%d-%H:%M:%S")))
+libs.common.utils.init_logger(
+    logfile='{}evalBLEU-{}.log'.format(args.ckp_path, time.strftime("%m-%d-%H:%M:%S")))
 logger = logging.getLogger('__main__')
 
 # model manager

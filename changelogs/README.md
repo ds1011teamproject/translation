@@ -1,3 +1,10 @@
+### Version 0.8.1 - 11/28/2018
+Changes:
+- Added grid search demo script 
+- change eval_randomly() logging level to debug 
+    - report translation for randomly selected sentence during training a single model
+    - depress printing during grid search
+
 ### Version 0.8.0 - 11/28/2018
 Changes:
 - major fix for rnn-encoder-decoder without

@@ -369,10 +369,10 @@ class MTBaseModel(BaseModel):
         target = " ".join([id2token[e.item()] for e in tgt.squeeze() if e.item() != iwslt.PAD_IDX])
         translated = " ".join([id2token[e] for e in predicted])
         translated_greedy = " ".join([id2token[e] for e in predicted_greedy])
-        logger.info("(Beam) Translate randomly from {}:\nTruth:{}\nPredicted:{}".format(loader_label,
-                                                                                        target,
-                                                                                        translated))
+        logger.debug("(Beam) Translate randomly from {}:\nTruth:{}\nPredicted:{}".format(loader_label,
+                                                                                         target,
+                                                                                         translated))
 
-        logger.info("(Greedy) Translate randomly from {}:\nTruth:{}\nPredicted:{}".format(loader_label,
-                                                                                          target,
-                                                                                          translated_greedy))
+        logger.debug("(Greedy) Translate randomly from {}:\nTruth:{}\nPredicted:{}".format(loader_label,
+                                                                                           target,
+                                                                                           translated_greedy))

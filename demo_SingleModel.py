@@ -44,7 +44,7 @@ parser.add_argument('-d', '--DATA', dest='data_path',
 parser.add_argument('-s', '--MSAVE', dest='model_save',
                     help='path of model checkpoints')
 parser.add_argument('-c', '--CONFIG', dest='config_file',
-                    help='config file path')
+                    help='config file name')
 parser.add_argument('-m', '--MODEL', dest='model_type', default='RNN_GRU',
                     help='model type of your choice')
 parser.add_argument('-l', '--LABEL', dest='model_label', required=True,
@@ -64,8 +64,9 @@ if getattr(args, 'model_save'):
     config_new.update({PathKey.MODEL_SAVES: args.model_save})
 
 # logger
-libs.common.utils.init_logger(logfile='{}{}-{}.log'.format(
-    config_new[PathKey.MODEL_SAVES], args.model_label, time.strftime("%m-%d-%H:%M:%S")))
+libs.common.utils.init_logger(
+    logfile='{}{}-{}.log'.format(
+        config_new[PathKey.MODEL_SAVES], args.model_label, time.strftime("%m-%d-%H:%M:%S")))
 logger = logging.getLogger('__main__')
 
 # model manager
@@ -73,5 +74,8 @@ mgr = mm.ModelManager(hparams=hparam_new, control_overrides=config_new)
 mgr.load_data(mm.loaderRegister.IWSLT)
 mgr.new_model(args.model_type, label=args.model_label)
 mgr.train()
+mgr.graph_training_curves()
+mgr.dump_model()
+# done
 logger.info("Train complete!\nModel {} {} training report:\n{}".format(
     args.model_type, args.model_label, mgr.model.output_dict))

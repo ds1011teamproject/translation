@@ -14,4 +14,11 @@ def init_logger(loglevel=LOG_LEVEL_DEFAULT, logfile=None):
     else:
         LogConfig['loggers']['']['handlers'] = ['console', 'default']
         LogConfig['handlers']['default']['filename'] = logfile
+    LogConfig['handlers']['default']['level'] = loglevel
     logging.config.dictConfig(LogConfig)
+
+
+def hparam_to_label(prefix, hparam_dict):
+    for k in hparam_dict:
+        prefix += '-{}{}'.format(k[:5], hparam_dict[k])
+    return prefix
