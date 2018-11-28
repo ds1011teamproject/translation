@@ -276,7 +276,7 @@ class MTBaseModel(BaseModel):
         val_loss_curve = self.iter_curves[self.VAL_LOSS]
         t = self.hparams[HyperParamKey.NO_IMPROV_LOOK_BACK]
 
-        logger.info("Checking for no improvement, val loss history is %s" % str(val_loss_curve))
+        # logger.info("Checking for no improvement, val loss history is %s" % str(val_loss_curve))
         if len(val_loss_curve) >= t + 1 and min(val_loss_curve[-t:]) > val_loss_curve[-t - 1]:
             return True
         return False
@@ -285,7 +285,7 @@ class MTBaseModel(BaseModel):
         lookback = self.hparams[HyperParamKey.EARLY_STOP_LOOK_BACK]
         threshold = self.hparams[HyperParamKey.EARLY_STOP_REQ_PROG]
         loss_hist = self.iter_curves[self.VAL_LOSS]
-        logger.info("Checking for early stop, val loss history is %s" % str(loss_hist))
+        # logger.info("Checking for early stop, val loss history is %s" % str(loss_hist))
         if len(loss_hist) > lookback + 1 and min(loss_hist[-lookback:]) > loss_hist[-lookback - 1] - threshold:
             return True
         return False
@@ -362,6 +362,15 @@ class MTBaseModel(BaseModel):
             enc_results = self.encoder(src, slen)
             # decoding
             predicted = self.decoding(tgt, enc_results, teacher_forcing=False, mode=DecodeMode.TRANSLATE_BEAM)[0]
+            predicted_greedy = self.decoding(tgt, enc_results, teacher_forcing=False, mode=DecodeMode.TRANSLATE)
+
         target = " ".join([id2token[e.item()] for e in tgt.squeeze() if e.item() != iwslt.PAD_IDX])
         translated = " ".join([id2token[e] for e in predicted])
-        logger.info("Translate randomly from {}:\nTruth:{}\nPredicted:{}".format(loader_label, target, translated))
+        translated_greedy = " ".join([id2token[e] for e in predicted_greedy])
+        logger.info("(Beam) Translate randomly from {}:\nTruth:{}\nPredicted:{}".format(loader_label,
+                                                                                        target,
+                                                                                        translated))
+
+        logger.info("(Greedy) Translate randomly from {}:\nTruth:{}\nPredicted:{}".format(loader_label,
+                                                                                          target,
+                                                                                          translated_greedy))

@@ -6,6 +6,7 @@ import torch
 
 from libs.models.TranslatorModel import MTBaseModel, DecodeMode
 from libs.models.modules import GRUAttention
+from libs.common.BeamSearcher import beam_search_attn
 import libs.data_loaders.IwsltLoader as iwslt
 from config.constants import HyperParamKey, LoaderParamKey
 from config.basic_conf import DEVICE
@@ -38,7 +39,7 @@ class RNN_Attention(MTBaseModel):
                                             freeze_emb=hparams[HyperParamKey.FREEZE_EMB] if hparams[HyperParamKey.USE_FT_EMB] else False
                                             ).to(DEVICE)
 
-    def decoding(self, tgt_batch, enc_results, teacher_forcing, mode):
+    def decoding(self, tgt_batch, enc_results, teacher_forcing, mode, beam_width=3):
         # init
         enc_out, hidden = enc_results
         batch_size = tgt_batch.size(0)
@@ -51,24 +52,32 @@ class RNN_Attention(MTBaseModel):
                                                        enc_out.size(2))).to(DEVICE)), dim=1)
         # first input
         dec_in = torch.LongTensor([iwslt.SOS_IDX] * batch_size).unsqueeze(1).to(DEVICE)
-        # decoding
-        for t in range(tgt_batch.size(1)):
-            dec_in, hidden = self.decoder(dec_in, hidden, enc_out)
-            if mode == DecodeMode.TRAIN:
-                batch_loss += self.criterion(dec_in, tgt_batch[:, t],
-                                             reduction='sum', ignore_index=iwslt.PAD_IDX)
-            elif mode == DecodeMode.EVAL:
-                batch_loss += self.criterion(dec_in, tgt_batch[:, t],
-                                             reduction='sum', ignore_index=iwslt.PAD_IDX).item()
-            if teacher_forcing and mode != DecodeMode.TRANSLATE:
-                dec_in = tgt_batch[:, t].unsqueeze(1)
-            else:
-                topv, topi = dec_in.topk(1)
-                dec_in = topi.detach()
-            if mode == DecodeMode.TRANSLATE:
-                predicted.append(dec_in.item())
-                if dec_in.item() == iwslt.EOS_IDX:
-                    break
+        # decoding - beam search
+        if mode == DecodeMode.TRANSLATE_BEAM:
+            # implement beam search here
+            beam_width = self.hparams.get(HyperParamKey.BEAM_SEARCH_WIDTH, beam_width)
+            with torch.no_grad():
+                predicted = beam_search_attn(dec_in, hidden, enc_out, self.decoder, tgt_batch.size(1), beam_width)
+                return predicted
+        else:
+            # decoding
+            for t in range(tgt_batch.size(1)):
+                dec_in, hidden = self.decoder(dec_in, hidden, enc_out)
+                if mode == DecodeMode.TRAIN:
+                    batch_loss += self.criterion(dec_in, tgt_batch[:, t],
+                                                 reduction='sum', ignore_index=iwslt.PAD_IDX)
+                elif mode == DecodeMode.EVAL:
+                    batch_loss += self.criterion(dec_in, tgt_batch[:, t],
+                                                 reduction='sum', ignore_index=iwslt.PAD_IDX).item()
+                if teacher_forcing and mode != DecodeMode.TRANSLATE:
+                    dec_in = tgt_batch[:, t].unsqueeze(1)
+                else:
+                    topv, topi = dec_in.topk(1)
+                    dec_in = topi.detach()
+                if mode == DecodeMode.TRANSLATE:
+                    predicted.append(dec_in.item())
+                    if dec_in.item() == iwslt.EOS_IDX:
+                        break
         # return results
         if mode == DecodeMode.TRANSLATE:
             return predicted
