@@ -75,7 +75,6 @@ mgr.load_data(mm.loaderRegister.IWSLT)
 mgr.new_model(args.model_type, label=args.model_label)
 mgr.train()
 mgr.graph_training_curves()
-mgr.dump_model()
 # done
 logger.info("Train complete!\nModel {} {} training report:\n{}".format(
     args.model_type, args.model_label, mgr.model.output_dict))
