@@ -18,7 +18,7 @@ export PATH=“/home/rf1316/miniconda3/bin:$PATH”
 conda activate torch
 
 # Run the training script
-for VARIABLE in 0.3, 0.1, 0.03, 0.01, 0.003, 0.001, 0.0003, 0.0001
+for VARIABLE in 0.3 0.1 0.03 0.01 0.003 0.001 0.0003 0.0001
 do
     PYTHONPATH=$PYTHONPATH:. python lr_grid.py -c user_rf1316 -m RNN_GRU -l $VARIABLE
 done
