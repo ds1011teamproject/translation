@@ -17,7 +17,7 @@ HPARAM = {
     HyperParamKey.DEC_LR: 0.001,
     HyperParamKey.ENC_NUM_DIRECTIONS: 2,
     HyperParamKey.DEC_NUM_DIRECTIONS: 1,
-    HyperParamKey.BATCH_SIZE: 64,
+    HyperParamKey.BATCH_SIZE: 32,
     HyperParamKey.TRAIN_LOOP_EVAL_FREQ: 200,
     HyperParamKey.NUM_TRAIN_SENT_TO_LOAD: None,
     HyperParamKey.CHECK_EARLY_STOP: True,
