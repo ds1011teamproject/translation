@@ -133,12 +133,14 @@ class EncoderTry(nn.Module):
         # size (batch * hidden * seq_len)
 
         # Replace max-pooling layer
-        context = torch.tanh(self.cpr_linear(enc_input)).squeeze(2)  # todo:  check F.relu
+        # a. use tanh
+        # context = torch.tanh(self.cpr_linear(enc_input)).squeeze(2)
+        # b. use relu  todo: check
+        context = F.relu(self.cpr_linear(enc_input)).squeeze(2)
         # size (batch * hidden) after .squeeze(2)
 
         # generate context vector
         context = self.gen_ctx(context).unsqueeze(0)
-        print('=== context vec ===', context.size())
 
         # return
         if self.use_attn:
