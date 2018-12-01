@@ -272,7 +272,7 @@ def tokenize(line):
     if line == '':
         return []
     line = line[0].lower() + line[1:]
-    return line.replace("\n", "").split()
+    return line.split()
 
 
 def raw_to_datumlist(data_path, language, data_split_type, num_to_load=None):
@@ -287,17 +287,24 @@ def raw_to_datumlist(data_path, language, data_split_type, num_to_load=None):
     datum_list = []
     file_path = '{}{}.tok.{}'.format(data_path, data_split_type, language)
     lines_loaded = 0
+    lines_readed = []
+
     with open(file_path, 'r') as f:
         lines = f.readlines()
         for line in lines:
-            datum = IWSLTDatum(line)
-            datum.set_tokens(tokenize(line))
-            datum_list.append(datum)
-            lines_loaded += 1
+            multi_lines = line.split('\n')
+            lines_readed += multi_lines
 
-            if num_to_load is not None and num_to_load > 0:
-                if lines_loaded >= num_to_load:
-                    break
+    for line in lines_readed:
+
+        datum = IWSLTDatum(line)
+        datum.set_tokens(tokenize(line))
+        datum_list.append(datum)
+        lines_loaded += 1
+
+        if num_to_load is not None and num_to_load > 0:
+            if lines_loaded >= num_to_load:
+                break
 
     return datum_list
 
