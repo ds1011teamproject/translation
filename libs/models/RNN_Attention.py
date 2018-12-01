@@ -81,7 +81,7 @@ class RNN_Attention(MTBaseModel):
                     if dec_in.item() == iwslt.EOS_IDX:
                         break
         # return results
-        if mode == DecodeMode.TRANSLATE:
+        if mode == DecodeMode.TRANSLATE or mode == DecodeMode.TRANSLATE_BEAM:
             return predicted
         else:
             batch_loss /= tgt_batch.data.gt(0).sum().float()

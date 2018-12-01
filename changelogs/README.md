@@ -1,3 +1,10 @@
+### Version 0.9.0 - 11/30/2018
+Changes:
+- Added CNN models with/without attention:
+    - to generate the context vector, before passing the hidden vectors through a 2-layer 
+    connected network, I tried using max-pooling, tanh(Vh) and Relu(Vh)
+- minor fix for RNN_Attention decoding method
+
 ### Version 0.8.1 - 11/28/2018
 Changes:
 - Added grid search demo script 
