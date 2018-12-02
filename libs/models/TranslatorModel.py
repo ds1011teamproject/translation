@@ -19,6 +19,7 @@ from libs.data_loaders.IwsltLoader import SRC, TAR, DataSplitType
 from config.constants import (HyperParamKey, LoaderParamKey, ControlKey,
                               PathKey, StateKey, LoadingKey, OutputKey)
 from libs.common.BleuScorer import BLEUScorer
+from tqdm import tqdm_notebook as tqdm
 
 logger = logging.getLogger('__main__')
 BLEUscorer = BLEUScorer()
@@ -305,7 +306,7 @@ class MTBaseModel(BaseModel):
         pred = []
         id2token = dataloader.id2token[iwslt.TAR]
         with torch.no_grad():
-            for src, tgt, slen, _ in dataloader.loaders[DataSplitType.VAL]:
+            for src, tgt, slen, _ in tqdm(dataloader.loaders[DataSplitType.VAL]):
                 for idx in range(len(src)):
                     # get sample
                     src_i = src[idx].unsqueeze(0)
@@ -319,14 +320,18 @@ class MTBaseModel(BaseModel):
                     # decoding
                     if use_beam:
                         predicted = self.decoding(tgt_i, enc_result, teacher_forcing=False,
-                                                  mode=DecodeMode.TRANSLATE_BEAM, beam_width=beam_width)[0]
+                                                  mode=DecodeMode.TRANSLATE_BEAM, beam_width=beam_width)
                     else:
                         predicted = self.decoding(tgt_i, enc_result, False, mode=DecodeMode.TRANSLATE)
                     # convert to strings
-                    target = " ".join([id2token[e] for e in tgt_i.squeeze() if e != iwslt.PAD_IDX])
-                    translated = " ".join([id2token[e] for e in predicted])
-                    true.append(target)
-                    pred.append(translated)
+                    try:
+                        target = " ".join([id2token[e] for e in tgt_i.squeeze() if e != iwslt.PAD_IDX])
+                        translated = " ".join([id2token[e] for e in predicted])
+                        true.append(target)
+                        pred.append(translated)
+                    except:
+                        logger.error(str(predicted))
+
         return BLEUscorer.bleu(true, [pred], score_only=score_only)
 
     def compute_loss(self, loader):
@@ -363,16 +368,16 @@ class MTBaseModel(BaseModel):
             # encoding
             enc_results = self.encoder(src, slen)
             # decoding
-            predicted = self.decoding(tgt, enc_results, teacher_forcing=False, mode=DecodeMode.TRANSLATE_BEAM)[0]
+            predicted = self.decoding(tgt, enc_results, teacher_forcing=False, mode=DecodeMode.TRANSLATE_BEAM)
             predicted_greedy = self.decoding(tgt, enc_results, teacher_forcing=False, mode=DecodeMode.TRANSLATE)
 
         target = " ".join([id2token[e.item()] for e in tgt.squeeze() if e.item() != iwslt.PAD_IDX])
         translated = " ".join([id2token[e] for e in predicted])
         translated_greedy = " ".join([id2token[e] for e in predicted_greedy])
-        logger.debug("(Beam) Translate randomly from {}:\nTruth:{}\nPredicted:{}".format(loader_label,
+        logger.info("(Beam) Translate randomly from {}:\n\n(Beam) Truth:\n{}\n\n(Beam) Predicted:\n{}".format(loader_label,
                                                                                          target,
                                                                                          translated))
 
-        logger.debug("(Greedy) Translate randomly from {}:\nTruth:{}\nPredicted:{}".format(loader_label,
+        logger.info("(Greedy) Translate randomly from {}:\n\n(Greedy) Truth:\n{}\n\n(Greedy) Predicted:\n{}".format(loader_label,
                                                                                            target,
                                                                                            translated_greedy))
