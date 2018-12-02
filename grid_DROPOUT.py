@@ -33,7 +33,7 @@ hparam_new = None
 if getattr(args, 'config_file'):
     user_conf = importlib.import_module('config.{}'.format(args.config_file))
     config_new.update(user_conf.CONFIG)
-    hparam_new = user_conf.get('HPARAM', {})
+    hparam_new = user_conf.HPARAM
 if getattr(args, 'data_path'):
     config_new.update({PathKey.DATA_PATH: args.data_path})
 if getattr(args, 'model_save'):
