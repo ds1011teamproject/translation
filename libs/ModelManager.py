@@ -170,7 +170,7 @@ class ModelManager:
             f, ax = plt.subplots(1, 1, figsize=(10, 7))
             ax.plot(curves[self.model.TRAIN_LOSS], label='training loss')
             ax2 = ax.twinx()
-            ax2.plot(curves[self.model.VAL_LOSS], label='val loss')
+            ax2.plot(curves[self.model.VAL_LOSS], label='val loss', color='y', linestyle='--')
             ax.set_xlabel(xlab)
             ax.legend()
             ax2.legend(bbox_to_anchor=(1, 0.95))
