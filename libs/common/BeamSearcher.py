@@ -71,7 +71,7 @@ def beam_search(init_dec_in, hidden, enc_out, decoder, target_length, beam_width
             last_val = cur_row['sent'].values[0][-1]
             if last_val != EOS_IDX:
                 cur_prev_hidden = cur_row['hidden'].values[0]
-                next_dec_in = torch.LongTensor([last_val], 1).unsqueeze(1).to(DEVICE)
+                next_dec_in = torch.LongTensor([last_val]).unsqueeze(1).to(DEVICE)
                 dec_out, next_hidden = decoder(next_dec_in, cur_prev_hidden, enc_out)
                 topv_next, topi_next = dec_out.topk(beam_width)
                 next_sp = tensor_to_df(topv_next, topi_next, next_hidden)
