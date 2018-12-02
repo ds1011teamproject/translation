@@ -19,7 +19,6 @@ from libs.data_loaders.IwsltLoader import SRC, TAR, DataSplitType
 from config.constants import (HyperParamKey, LoaderParamKey, ControlKey,
                               PathKey, StateKey, LoadingKey, OutputKey)
 from libs.common.BleuScorer import BLEUScorer
-from tqdm import tqdm_notebook as tqdm
 
 logger = logging.getLogger('__main__')
 BLEUscorer = BLEUScorer()
@@ -306,7 +305,7 @@ class MTBaseModel(BaseModel):
         pred = []
         id2token = dataloader.id2token[iwslt.TAR]
         with torch.no_grad():
-            for src, tgt, slen, _ in tqdm(dataloader.loaders[DataSplitType.VAL]):
+            for src, tgt, slen, _ in dataloader.loaders[DataSplitType.VAL]:
                 for idx in range(len(src)):
                     # get sample
                     src_i = src[idx].unsqueeze(0)
