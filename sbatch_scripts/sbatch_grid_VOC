@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=8
+#SBATCH --time=96:00:00
+#SBATCH --mem=64GB
+#SBATCH --job-name=gridVOC
+#SBATCH --gres=gpu:1
+#SBATCH --mail-type=END
+#SBATCH --mail-user=<netid>@nyu.edu
+#SBATCH --output=<your log path>/batch-%j.log
+
+RUNDIR=$HOME/translation/
+cd $RUNDIR
+
+export PATH="/home/xl2053/miniconda3/bin:$PATH"
+. /home/xl2053/miniconda3/etc/profile.d/conda.sh
+conda activate
+conda activate nlpclass
+
+
+for VOC in 25000 50000 100000
+do
+    python grid_VOC.py -c user_<netid> -m <your model> -v $VOC
+done

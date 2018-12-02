@@ -10,13 +10,7 @@ from libs.models.RNN_Attention import RNN_Attention
 reg = {
     'RNN_GRU': RNN_GRU,
     'RNN_Attention': RNN_Attention,
-    'CNN': CNN,
-    'CNN_Pool': CNN_Pool,
-    'CNNAttn_Pool': CNNAttn_Pool,
-    'CNN_Tanh': CNN_Tanh,
-    'CNNAttn_Tanh': CNNAttn_Tanh,
-    'CNN_Relu': CNN_Relu,
-    'CNNAttn_Relu': CNNAttn_Relu
+    'CNNAttn_Tanh': CNNAttn_Tanh
 }
 
 
