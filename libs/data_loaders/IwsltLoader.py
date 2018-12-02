@@ -174,7 +174,8 @@ class IwsltLoader(BaseLoader):
                 dataset=cur_ds,
                 batch_size=self.hparams[hparamKey.BATCH_SIZE],
                 collate_fn=self.iwslt_collate_func,
-                shuffle=shuffle_dict[split])
+                shuffle=shuffle_dict[split],
+                drop_last=True)
 
     def iwslt_collate_func(self, batch):
         """
