@@ -47,8 +47,8 @@ def beam_search(init_dec_in, hidden, enc_out, decoder, max_len, beam_width=3,
             dec_in = torch.LongTensor([curr_tok_idx]).unsqueeze(1).to(DEVICE)
             dec_out, h_state = decoder(dec_in, h_state, enc_out)
             topv, topi = dec_out.topk(beam_width)
-            prob = topv[0].numpy()
-            idxs = topi[0].numpy()
+            prob = topv[0].cpu().numpy()
+            idxs = topi[0].cpu().numpy()
 
             for i in range(beam_width):
                 p = prob[i]

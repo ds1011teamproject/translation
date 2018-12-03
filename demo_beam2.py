@@ -5,7 +5,7 @@ python  -p model_saves/rnn/     # path to model checkpoint files
         -m RNN_GRU              # model type
         -s best                 # 'best' or 'checkpoint'
         -w 3                    # search width
-        --SIMPLE <or> --FACTOR  # length penalty method
+        --SIMPLE <or> --FACTOR  # length penalty method, not required, default=SIMPLE
 
 """
 
@@ -32,7 +32,7 @@ beam_w = int(args.beam_width)
 model_type = args.model_type if args.model_type else 'RNN_Attention'
 ckp_path = args.ckp_path if args.ckp_path else '/scratch/xl2053/nlp/translation/model_saves/attnESbleuSave/'
 save_method = args.save_method if args.save_method else 'best'
-len_penalty = SIMPLE if args.SIMPLE else FACTOR
+len_penalty = FACTOR if args.FACTOR else SIMPLE
 
 
 mgr = mm.ModelManager()
