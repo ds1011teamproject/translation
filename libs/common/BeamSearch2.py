@@ -24,7 +24,7 @@ def len_penalty(lens, fac=0.65):
 
 
 def beam_search(init_dec_in, hidden, enc_out, decoder, max_len, beam_width=3,
-                len_penalty_type=SIMPLE):
+                len_penalty_type=FACTOR):
     """
     I use the same signature as Rong's beam-search method, painless if we switch later
     :param init_dec_in:

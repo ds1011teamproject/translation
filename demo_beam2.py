@@ -1,11 +1,12 @@
 """
 DEMO: use beam search to evaluate BLEU on validation set
 
-python  -p model_saves/rnn/     # path to model checkpoint files
+python demo_beam2.py \
+        -p model_saves/rnn/     # path to model checkpoint files
         -m RNN_GRU              # model type
         -s best                 # 'best' or 'checkpoint'
         -w 3                    # search width
-        --SIMPLE <or> --FACTOR  # length penalty method, not required, default=SIMPLE
+        --SIMPLE <or> --FACTOR  # length penalty method, not required, default=FACTOR
 
 """
 
@@ -32,7 +33,7 @@ beam_w = int(args.beam_width)
 model_type = args.model_type if args.model_type else 'RNN_Attention'
 ckp_path = args.ckp_path if args.ckp_path else '/scratch/xl2053/nlp/translation/model_saves/attnESbleuSave/'
 save_method = args.save_method if args.save_method else 'best'
-len_penalty = FACTOR if args.FACTOR else SIMPLE
+len_penalty = SIMPLE if args.SIMPLE else FACTOR
 
 
 mgr = mm.ModelManager()
@@ -87,9 +88,9 @@ with torch.no_grad():
                 print("GREEDY: ", greedy_tran)
                 translated = " ".join([id2token[e] for e in predicted[1:]])
                 print("BEAM:   ", translated)
-                print("Beam score: (A){}  Greedy score: {}".format(
-                    bleuScorer.bleu(target, translated, score_only=True),
-                    bleuScorer.bleu(target, greedy_tran, score_only=True)))
+                # print("Beam score: (A){}  Greedy score: {}".format(
+                #     bleuScorer.bleu(target, translated, score_only=True),
+                #     bleuScorer.bleu(target, greedy_tran, score_only=True)))
                 true.append(target)
                 pred.append(translated)
             except:
