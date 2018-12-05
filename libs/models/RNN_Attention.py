@@ -26,7 +26,7 @@ class RNN_Attention(MTBaseModel):
             num_layers=hparams[HyperParamKey.ENC_NUM_LAYERS],
             num_directions=hparams[HyperParamKey.ENC_NUM_DIRECTIONS],
             dropout_prob=hparams.get(HyperParamKey.ENC_DROPOUT, 0.0),
-            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][iwslt.SRC] if hparams[HyperParamKey.USE_FT_EMB] else None,
+            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][iwslt.SRC] if lparams.get(LoaderParamKey.TRAINED_EMB) else None,
             freeze_emb=hparams[HyperParamKey.FREEZE_EMB] if hparams[HyperParamKey.USE_FT_EMB] else False
         ).to(DEVICE)
         self.decoder = GRUAttention.Decoder(
@@ -37,7 +37,7 @@ class RNN_Attention(MTBaseModel):
             num_directions=hparams[HyperParamKey.DEC_NUM_DIRECTIONS],
             seq_len=hparams[HyperParamKey.MAX_LENGTH],
             dropout_prob=hparams.get(HyperParamKey.DEC_DROPOUT, 0.0),
-            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][iwslt.TAR] if hparams[HyperParamKey.USE_FT_EMB] else None,
+            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][iwslt.TAR] if lparams.get(LoaderParamKey.TRAINED_EMB) else None,
             freeze_emb=hparams[HyperParamKey.FREEZE_EMB] if hparams[HyperParamKey.USE_FT_EMB] else False
         ).to(DEVICE)
 

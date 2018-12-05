@@ -24,7 +24,7 @@ class CNN_Pool(RNN_GRU):
             hidden_size=self.hparams[HyperParamKey.HIDDEN_SIZE],
             kernel_size=self.hparams[HyperParamKey.KERNEL_SIZE],
             dropout_prob=self.hparams.get(HyperParamKey.ENC_DROPOUT, 0.0),
-            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][SRC] if hparams[HyperParamKey.USE_FT_EMB] else None,
+            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][SRC] if lparams.get(LoaderParamKey.TRAINED_EMB) else None,
             freeze_emb=hparams[HyperParamKey.FREEZE_EMB] if hparams[HyperParamKey.USE_FT_EMB] else False
         ).to(DEVICE)
 
@@ -40,7 +40,7 @@ class CNNAttn_Pool(RNN_Attention):
             hidden_size=self.hparams[HyperParamKey.HIDDEN_SIZE],
             kernel_size=self.hparams[HyperParamKey.KERNEL_SIZE],
             dropout_prob=self.hparams.get(HyperParamKey.ENC_DROPOUT, 0.0),
-            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][SRC] if hparams[HyperParamKey.USE_FT_EMB] else None,
+            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][SRC] if lparams.get(LoaderParamKey.TRAINED_EMB) else None,
             freeze_emb=hparams[HyperParamKey.FREEZE_EMB] if hparams[HyperParamKey.USE_FT_EMB] else False,
             use_attn=True
         ).to(DEVICE)
@@ -57,7 +57,7 @@ class CNN_Tanh(RNN_GRU):
             kernel_size=self.hparams[HyperParamKey.KERNEL_SIZE],
             seq_len=self.hparams[HyperParamKey.MAX_LENGTH],
             dropout_prob=self.hparams.get(HyperParamKey.ENC_DROPOUT, 0.0),
-            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][SRC] if hparams[HyperParamKey.USE_FT_EMB] else None,
+            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][SRC] if lparams.get(LoaderParamKey.TRAINED_EMB) else None,
             freeze_emb=hparams[HyperParamKey.FREEZE_EMB] if hparams[HyperParamKey.USE_FT_EMB] else False
         ).to(DEVICE)
 
@@ -73,7 +73,7 @@ class CNNAttn_Tanh(RNN_Attention):
             kernel_size=self.hparams[HyperParamKey.KERNEL_SIZE],
             seq_len=self.hparams[HyperParamKey.MAX_LENGTH],
             dropout_prob=self.hparams.get(HyperParamKey.ENC_DROPOUT, 0.0),
-            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][SRC] if hparams[HyperParamKey.USE_FT_EMB] else None,
+            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][SRC] if lparams.get(LoaderParamKey.TRAINED_EMB) else None,
             freeze_emb=hparams[HyperParamKey.FREEZE_EMB] if hparams[HyperParamKey.USE_FT_EMB] else False,
             use_attn=True
         ).to(DEVICE)
@@ -90,7 +90,7 @@ class CNN_Relu(RNN_GRU):
             kernel_size=self.hparams[HyperParamKey.KERNEL_SIZE],
             seq_len=self.hparams[HyperParamKey.MAX_LENGTH],
             dropout_prob=self.hparams.get(HyperParamKey.ENC_DROPOUT, 0.0),
-            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][SRC] if hparams[HyperParamKey.USE_FT_EMB] else None,
+            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][SRC] if lparams.get(LoaderParamKey.TRAINED_EMB) else None,
             freeze_emb=hparams[HyperParamKey.FREEZE_EMB] if hparams[HyperParamKey.USE_FT_EMB] else False
         ).to(DEVICE)
 
@@ -106,7 +106,7 @@ class CNNAttn_Relu(RNN_Attention):
             kernel_size=self.hparams[HyperParamKey.KERNEL_SIZE],
             seq_len=self.hparams[HyperParamKey.MAX_LENGTH],
             dropout_prob=self.hparams.get(HyperParamKey.ENC_DROPOUT, 0.0),
-            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][SRC] if hparams[HyperParamKey.USE_FT_EMB] else None,
+            trained_emb=lparams[LoaderParamKey.TRAINED_EMB][SRC] if lparams.get(LoaderParamKey.TRAINED_EMB) else None,
             freeze_emb=hparams[HyperParamKey.FREEZE_EMB] if hparams[HyperParamKey.USE_FT_EMB] else False,
             use_attn=True
         ).to(DEVICE)

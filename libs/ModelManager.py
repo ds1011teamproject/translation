@@ -102,7 +102,10 @@ class ModelManager:
         lparams = dict()
         lparams.update(self.lparams)
         if self.hparams[HyperParamKey.USE_FT_EMB]:
-            lparams[LoaderParamKey.TRAINED_EMB] = self.dataloader.trained_emb
+            try:
+                lparams[LoaderParamKey.TRAINED_EMB] = self.dataloader.trained_emb
+            except:
+                pass
         self.model = cur_constructor(self.hparams, lparams, self.cparams, safe_label, nolog=nolog)
 
         # make the directory for model saves:
