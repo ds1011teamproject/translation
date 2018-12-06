@@ -7,7 +7,7 @@ python demo_beam2.py \
         -s best                 # 'best' or 'checkpoint'
         -w 3                    # search width
         --SIMPLE <or> --FACTOR  # length penalty method, not required, default=FACTOR
-
+        --FINAL                 # only if evaluate on test-set (best model required)
 """
 
 import torch
@@ -27,6 +27,8 @@ parser.add_argument('-s', '--SAVE_METHOD', dest='save_method')
 parser.add_argument('-w', '--WIDTH', dest='beam_width', required=True)
 parser.add_argument('--SIMPLE', action='store_true')
 parser.add_argument('--FACTOR', action='store_true')
+parser.add_argument('--FINAL', action='store_true')
+parser.add_argument('--verbose', action='store_true')
 
 args = parser.parse_args()
 beam_w = int(args.beam_width)
@@ -34,7 +36,7 @@ model_type = args.model_type if args.model_type else 'RNN_Attention'
 ckp_path = args.ckp_path if args.ckp_path else '/scratch/xl2053/nlp/translation/model_saves/attnESbleuSave/'
 save_method = args.save_method if args.save_method else 'best'
 len_penalty = SIMPLE if args.SIMPLE else FACTOR
-
+data_split = 'test' if args.FINAL else 'dev'
 
 mgr = mm.ModelManager()
 bleuScorer = BLEUScorer()
@@ -57,7 +59,7 @@ id2token = mgr.dataloader.id2token[iwslt.TAR]
 max_len = mgr.model.hparams[HyperParamKey.MAX_LENGTH]
 
 with torch.no_grad():
-    for src, tgt, slen, _ in mgr.dataloader.loaders['dev']:
+    for src, tgt, slen, _ in mgr.dataloader.loaders[data_split]:
         for idx in range(len(src)):
             # get sample
             src_i = src[idx].unsqueeze(0)
@@ -73,7 +75,7 @@ with torch.no_grad():
 
             # my beam search
             # pad enc_out batch
-            if enc_out.size(1) < 100:
+            if enc_out.size(1) < max_len:
                 enc_out = torch.cat((enc_out, torch.zeros((1,
                                                            max_len - enc_out.size(1),
                                                            enc_out.size(2))).to(DEVICE)), dim=1)
@@ -83,17 +85,16 @@ with torch.no_grad():
             # convert to strings
             try:
                 target = " ".join([id2token[e] for e in tgt_i.squeeze() if e != iwslt.PAD_IDX])
-                print("***\n***\nTRUTH:  ", target)
                 greedy_tran = " ".join([id2token[e] for e in greedy])
-                print("GREEDY: ", greedy_tran)
                 translated = " ".join([id2token[e] for e in predicted[1:]])
-                print("BEAM:   ", translated)
-                # print("Beam score: (A){}  Greedy score: {}".format(
-                #     bleuScorer.bleu(target, translated, score_only=True),
-                #     bleuScorer.bleu(target, greedy_tran, score_only=True)))
+                if idx == 0 and args.verbose:
+                    print("***\n***\nTRUTH:  ", target)
+                    print("GREEDY: ", greedy_tran)
+                    print("BEAM:   ", translated)
                 true.append(target)
                 pred.append(translated)
             except:
                 print(str(predicted))
 
+print()
 print(bleuScorer.bleu(true, [pred], score_only=False))
