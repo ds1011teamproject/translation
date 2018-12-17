@@ -7,8 +7,7 @@ Team project for [Natural Language Processing with Representation Learning
 
 Vietnamese-English and Chinese-English parallel corpus provided by the instructors. 
 
-* Pre-trained word embeddings:
-    Using `fastText` word vectors. [(more information)](https://fasttext.cc/docs/en/crawl-vectors.html)
+Pre-trained word embeddings: using `fastText` word vectors [(more information)](https://fasttext.cc/docs/en/crawl-vectors.html).
 
 Please have your data ready in following structure:
 ```
