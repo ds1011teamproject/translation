@@ -5,10 +5,10 @@ Team project for [Natural Language Processing with Representation Learning
 
 ## Data
 
-Vietnum-English and Chinese-English parallel corpus provided by the instructors. 
+Vietnamese-English and Chinese-English parallel corpus provided by the instructors. 
 
 * Pre-trained word embeddings:
-    Using FastText word vectors. [(more information)](https://fasttext.cc/docs/en/crawl-vectors.html)
+    Using `fastText` word vectors. [(more information)](https://fasttext.cc/docs/en/crawl-vectors.html)
 
 Please have your data ready in following structure:
 ```
@@ -26,6 +26,7 @@ Please have your data ready in following structure:
 ```
 
 ## Installation
+
 Do this installation if you are going to experiment with the code
 ```
 $ git clone https://github.com/ds1011teamproject/translation.git
@@ -33,16 +34,18 @@ $ mkdir data
 $ mkdir model_saves
 ```
 
-**!** If you are using different folders for data and models, update the data file paths in `nlpt.config.basic_conf.py`.
+**!** If you are using different folders for data and models, update the data file paths in `config/basic_conf.py`.
 
+### Releasing updates:
 
-## Releasing Updates:
-Please do the following items when pushing a change out
+Please do the following when pushing a change out:
+
 - increment version for libs
-- add change notes to changelogs/README.md
+- add change notes to `changelogs/README.md`
 
+## Run
 
-## Running on HPC
+### Running on HPC
 
 ```
 $ module load anaconda3/5.3.0  # HPC only
@@ -60,14 +63,17 @@ On HPC, you might need to add the following line to your `~/.bashrc`:
 . /share/apps/anaconda3/5.3.0/etc/profile.d/conda.sh
 ```
 
-## Running Locally
-This will execute the version that is installed in site-packages
+### Running locally
+
+This will execute the version that is installed in `site-packages`:
+
 ```
 $ python -m main
 ```
 
-## Running in a notebook
-See main_nb.ipynb
+### Running in a Jupyter notebook
+
+See `main_nb.ipynb`
 
 ## RNN encoder-decoder
 
@@ -76,5 +82,3 @@ PyTorch implementation of recurrent neural network (RNN) encoder-decoder archite
 ### Further references
 
 [pytorch/fairseq/models/LSTM](https://github.com/pytorch/fairseq/blob/master/fairseq/models/lstm.py)
-
-**NB:** Forward of the encoder produces (batch size x sequence length x hidden state), which is the input to the decoder that also takes in the previous output tokens.
