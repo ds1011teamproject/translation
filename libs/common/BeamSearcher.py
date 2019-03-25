@@ -78,6 +78,8 @@ def beam_search(init_dec_in, hidden, enc_out, decoder, target_length, beam_width
 
                 cur_new_probs = combine_dfs(cur_row, next_sp)
                 cur_hypo_df_list.append(cur_new_probs)
+            else:
+                cur_hypo_df_list.append(cur_row)
 
         sent_probs = pd.concat(cur_hypo_df_list, axis=0)
         # display(sent_probs)

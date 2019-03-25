@@ -1,3 +1,15 @@
+### Version 1.0.0 - 12/03/2018
+Changes:
+- added grid search scripts and correponding sbatch scripts
+    - search vocab_size (and whether use pre-trained emb)
+    - search (hidden_size, lr)
+    - search dropout probability (CNN)
+- fixed beam search 
+- fixed loading models trained with pre-trained embeddings
+- remove redundant files
+
+Grid search in progress, work in prod!
+
 ### Version 0.9.0 - 11/30/2018
 Changes:
 - Added CNN models with/without attention:

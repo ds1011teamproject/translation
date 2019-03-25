@@ -1,8 +1,7 @@
 """
 registry for model constructors, used by ModelManager to lookup model constructors
 """
-from libs.models.CNN import CNN
-from libs.models.CNN2 import CNN_Pool, CNNAttn_Pool, CNN_Tanh, CNNAttn_Tanh, CNN_Relu, CNNAttn_Relu
+from libs.models.CNN import CNN_Pool, CNNAttn_Pool, CNN_Tanh, CNNAttn_Tanh, CNN_Relu, CNNAttn_Relu
 from libs.models.RNN_GRU import RNN_GRU
 from libs.models.RNN_Attention import RNN_Attention
 # todo make the registry dynamic based on the file name

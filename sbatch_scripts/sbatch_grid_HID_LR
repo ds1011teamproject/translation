@@ -21,5 +21,5 @@ conda activate nlpclass
 
 for HIDDEN in 500 1000 2000
 do
-    python grid_HIDDEN_LR.py -c user_<netid> -m <your model> -h $HIDDEN
+    python grid_HIDDEN_LR.py -c user_<netid> -m <your model> -v $HIDDEN
 done

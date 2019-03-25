@@ -9,7 +9,7 @@ DEFAULT_HPARAMS = {
     # vocab
     HyperParamKey.VOC_SIZE: 25000,
     HyperParamKey.USE_FT_EMB: False,
-    HyperParamKey.FREEZE_EMB: False,
+    HyperParamKey.FREEZE_EMB: True,
     # model
     HyperParamKey.EMBEDDING_DIM: 300,  # fix
     HyperParamKey.HIDDEN_SIZE: 1000,

@@ -102,7 +102,10 @@ class ModelManager:
         lparams = dict()
         lparams.update(self.lparams)
         if self.hparams[HyperParamKey.USE_FT_EMB]:
-            lparams[LoaderParamKey.TRAINED_EMB] = self.dataloader.trained_emb
+            try:
+                lparams[LoaderParamKey.TRAINED_EMB] = self.dataloader.trained_emb
+            except:
+                pass
         self.model = cur_constructor(self.hparams, lparams, self.cparams, safe_label, nolog=nolog)
 
         # make the directory for model saves:
@@ -158,6 +161,9 @@ class ModelManager:
         if the manager is operating in console mode, the files are saved in a png in the model dir
         :param mode: in training mode or epoch mode, determines frequency of the x axis (by check iteration or by epoch)
         """
+        # special prince fix:
+        plt.switch_backend('agg')
+
         if self.model is None:
             logger.error("cannot graph training curves since there is no trained model")
         else:
